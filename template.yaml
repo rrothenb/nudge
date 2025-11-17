@@ -1,0 +1,625 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Trust-based Knowledge Platform - Serverless Backend
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    Timeout: 30
+    MemorySize: 512
+    Environment:
+      Variables:
+        NODE_ENV: !Ref Environment
+        USERS_TABLE: !Ref UsersTable
+        ASSERTIONS_TABLE: !Ref AssertionsTable
+        TRUST_TABLE: !Ref TrustRelationshipsTable
+        CACHE_TABLE: !Ref GeneratedContentCache
+        JOBS_TABLE: !Ref ImportJobsTable
+        CLAUDE_API_KEY: !Sub '{{resolve:secretsmanager:${ClaudeAPIKeySecret}:SecretString:apiKey}}'
+    Architectures:
+      - arm64
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+    Description: Environment name
+
+  ClaudeAPIKeyValue:
+    Type: String
+    NoEcho: true
+    Description: Anthropic Claude API Key (will be stored in Secrets Manager)
+
+Resources:
+  # ============================================================================
+  # COGNITO USER POOL
+  # ============================================================================
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub trust-platform-${Environment}
+      AutoVerifiedAttributes:
+        - email
+      UsernameAttributes:
+        - email
+      Schema:
+        - Name: email
+          Required: true
+          Mutable: false
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: true
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+      UserAttributeUpdateSettings:
+        AttributesRequireVerificationBeforeUpdate:
+          - email
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub trust-platform-client-${Environment}
+      UserPoolId: !Ref UserPool
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      AccessTokenValidity: 1
+      IdTokenValidity: 1
+      RefreshTokenValidity: 30
+      TokenValidityUnits:
+        AccessToken: hours
+        IdToken: hours
+        RefreshToken: days
+
+  # ============================================================================
+  # API GATEWAY
+  # ============================================================================
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub trust-platform-api-${Environment}
+      StageName: !Ref Environment
+      Cors:
+        AllowOrigin: "'*'"
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        MaxAge: "'3600'"
+      Auth:
+        DefaultAuthorizer: CognitoAuthorizer
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn: !GetAtt UserPool.Arn
+
+  # ============================================================================
+  # DYNAMODB TABLES
+  # ============================================================================
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub trust-platform-users-${Environment}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  AssertionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub trust-platform-assertions-${Environment}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+        - AttributeName: GSI2PK
+          AttributeType: S
+        - AttributeName: GSI2SK
+          AttributeType: S
+        - AttributeName: GSI3PK
+          AttributeType: S
+        - AttributeName: GSI3SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: BySource
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: ByType
+          KeySchema:
+            - AttributeName: GSI2PK
+              KeyType: HASH
+            - AttributeName: GSI2SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: ByTopic
+          KeySchema:
+            - AttributeName: GSI3PK
+              KeyType: HASH
+            - AttributeName: GSI3SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  TrustRelationshipsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub trust-platform-trust-${Environment}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: ByTarget
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  GeneratedContentCache:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub trust-platform-cache-${Environment}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      TimeToLiveSpecification:
+        Enabled: true
+        AttributeName: expiresAt
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  ImportJobsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub trust-platform-jobs-${Environment}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: ByUser
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  # ============================================================================
+  # SECRETS MANAGER
+  # ============================================================================
+  ClaudeAPIKeySecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub trust-platform-claude-api-key-${Environment}
+      Description: Anthropic Claude API Key
+      SecretString: !Sub |
+        {
+          "apiKey": "${ClaudeAPIKeyValue}"
+        }
+
+  # ============================================================================
+  # LAMBDA FUNCTIONS - User Management
+  # ============================================================================
+  UserProfileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/functions/user-profile/
+      Handler: index.handler
+      Description: Get and update user profile
+      Events:
+        GetProfile:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /api/user/profile
+            Method: GET
+        UpdateProfile:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /api/user/profile
+            Method: PUT
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: true
+        EntryPoints:
+          - index.ts
+        External:
+          - '@aws-sdk/*'
+
+  # ============================================================================
+  # LAMBDA FUNCTIONS - Assertions
+  # ============================================================================
+  AssertionCRUDFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/functions/assertion-crud/
+      Handler: index.handler
+      Description: CRUD operations for assertions
+      Events:
+        CreateAssertion:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /api/assertions
+            Method: POST
+        GetAssertion:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /api/assertions/{id}
+            Method: GET
+        ListAssertions:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /api/assertions
+            Method: GET
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AssertionsTable
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: true
+        EntryPoints:
+          - index.ts
+        External:
+          - '@aws-sdk/*'
+
+  # ============================================================================
+  # LAMBDA FUNCTIONS - Trust
+  # ============================================================================
+  TrustOperationsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/functions/trust-operations/
+      Handler: index.handler
+      Description: Set and get trust values
+      Events:
+        SetTrust:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /api/trust
+            Method: POST
+        GetTrust:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /api/trust/{targetId}
+            Method: GET
+        ListTrust:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /api/trust
+            Method: GET
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TrustRelationshipsTable
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: true
+        EntryPoints:
+          - index.ts
+        External:
+          - '@aws-sdk/*'
+
+  # ============================================================================
+  # LAMBDA FUNCTIONS - Views
+  # ============================================================================
+  WikiQueryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/functions/wiki-query/
+      Handler: index.handler
+      Description: Generate wiki articles from assertions
+      Timeout: 60
+      MemorySize: 1024
+      Events:
+        GetWikiArticle:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /api/views/wiki/{topic}
+            Method: GET
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AssertionsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TrustRelationshipsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref GeneratedContentCache
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: true
+        EntryPoints:
+          - index.ts
+        External:
+          - '@aws-sdk/*'
+
+  NewsQueryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/functions/news-query/
+      Handler: index.handler
+      Description: Get trust-filtered news feed
+      Events:
+        GetNewsFeed:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /api/views/news
+            Method: GET
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AssertionsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TrustRelationshipsTable
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: true
+        EntryPoints:
+          - index.ts
+        External:
+          - '@aws-sdk/*'
+
+  ChatQueryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/functions/chat-query/
+      Handler: index.handler
+      Description: Chat interface with trust-based knowledge
+      Timeout: 60
+      MemorySize: 1024
+      Events:
+        ChatQuery:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /api/views/chat
+            Method: POST
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AssertionsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TrustRelationshipsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref GeneratedContentCache
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: true
+        EntryPoints:
+          - index.ts
+        External:
+          - '@aws-sdk/*'
+
+  # ============================================================================
+  # LAMBDA FUNCTIONS - Import
+  # ============================================================================
+  WikiImportFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/functions/wiki-import/
+      Handler: index.handler
+      Description: Import Wikipedia articles
+      Timeout: 300
+      MemorySize: 1024
+      Events:
+        StartImport:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /api/import/wikipedia
+            Method: POST
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AssertionsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ImportJobsTable
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: true
+        EntryPoints:
+          - index.ts
+        External:
+          - '@aws-sdk/*'
+
+  NewsImportFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/functions/news-import/
+      Handler: index.handler
+      Description: Import news articles from RSS
+      Timeout: 300
+      MemorySize: 1024
+      Events:
+        StartImport:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /api/import/news
+            Method: POST
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AssertionsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ImportJobsTable
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: true
+        EntryPoints:
+          - index.ts
+        External:
+          - '@aws-sdk/*'
+
+  # ============================================================================
+  # S3 + CLOUDFRONT - Frontend Hosting
+  # ============================================================================
+  WebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub trust-platform-web-${Environment}-${AWS::AccountId}
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  WebsiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref WebsiteBucket
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Sub '${WebsiteBucket.Arn}/*'
+
+# ============================================================================
+# OUTPUTS
+# ============================================================================
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub 'https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}'
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiEndpoint'
+
+  UserPoolId:
+    Description: Cognito User Pool ID
+    Value: !Ref UserPool
+    Export:
+      Name: !Sub '${AWS::StackName}-UserPoolId'
+
+  UserPoolClientId:
+    Description: Cognito User Pool Client ID
+    Value: !Ref UserPoolClient
+    Export:
+      Name: !Sub '${AWS::StackName}-UserPoolClientId'
+
+  WebsiteBucketName:
+    Description: S3 bucket for frontend hosting
+    Value: !Ref WebsiteBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-WebsiteBucket'
+
+  WebsiteURL:
+    Description: Website URL
+    Value: !GetAtt WebsiteBucket.WebsiteURL
+    Export:
+      Name: !Sub '${AWS::StackName}-WebsiteURL'

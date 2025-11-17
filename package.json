@@ -1,0 +1,26 @@
+{
+  "name": "trust-knowledge-platform",
+  "version": "1.0.0",
+  "description": "Trust-based knowledge platform with personalized truth",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "install:all": "npm install && cd shared && npm install && cd ../backend && npm install && cd ../frontend && npm install",
+    "build:shared": "cd shared && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "build": "npm run build:shared && npm run build:backend && npm run build:frontend",
+    "dev:frontend": "cd frontend && npm run dev",
+    "test:backend": "cd backend && npm test",
+    "test:frontend": "cd frontend && npm test",
+    "deploy:dev": "sam build && sam deploy --config-env dev",
+    "deploy:prod": "sam build && sam deploy --config-env prod"
+  },
+  "keywords": ["trust", "knowledge", "platform", "aws", "serverless"],
+  "author": "",
+  "license": "MIT"
+}
