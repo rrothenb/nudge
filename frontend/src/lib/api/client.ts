@@ -2,7 +2,8 @@
  * API Client with Axios
  * Handles authentication, error handling, and retries
  */
-import axios, type { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios from 'axios';
+import type { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { get } from 'svelte/store';
 import { authStore } from '../stores/auth';
 
