@@ -1,7 +1,7 @@
 /**
  * Seed data for local development
  */
-import type { UserProfile, Assertion, TrustRelationship } from '@nudge/shared';
+import type { UserProfile, Assertion, TrustRelationship, Group } from '@nudge/shared';
 import { store } from './store.js';
 
 export function seedData() {
@@ -263,5 +263,86 @@ export function seedData() {
 
   store.addNewsItems(newsItems);
 
-  console.log(`Seeded ${users.length} users, ${assertions.length} assertions, ${trustRelationships.length} trust relationships`);
+  // Create sample groups
+  const groups: Group[] = [
+    {
+      groupId: 'group-scientists',
+      name: 'Climate Scientists',
+      description: 'Researchers and institutions studying climate change',
+      createdBy: 'system',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      members: [
+        {
+          memberId: 'Nature',
+          memberType: 'source',
+          addedBy: 'system',
+          addedAt: new Date().toISOString(),
+        },
+        {
+          memberId: 'ScienceDaily',
+          memberType: 'source',
+          addedBy: 'system',
+          addedAt: new Date().toISOString(),
+        },
+      ],
+      isSystemDefined: true,
+      visibility: 'public',
+      tags: ['science', 'climate', 'research'],
+    },
+    {
+      groupId: 'group-news',
+      name: 'Mainstream News',
+      description: 'Established news organizations',
+      createdBy: 'system',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      members: [
+        {
+          memberId: 'NYT',
+          memberType: 'source',
+          addedBy: 'system',
+          addedAt: new Date().toISOString(),
+        },
+        {
+          memberId: 'BBC',
+          memberType: 'source',
+          addedBy: 'system',
+          addedAt: new Date().toISOString(),
+        },
+      ],
+      isSystemDefined: true,
+      visibility: 'public',
+      tags: ['news', 'journalism'],
+    },
+    {
+      groupId: 'group-academic',
+      name: 'Academic Sources',
+      description: 'Peer-reviewed journals and preprint repositories',
+      createdBy: 'system',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      members: [
+        {
+          memberId: 'Nature',
+          memberType: 'source',
+          addedBy: 'system',
+          addedAt: new Date().toISOString(),
+        },
+        {
+          memberId: 'ArXiv',
+          memberType: 'source',
+          addedBy: 'system',
+          addedAt: new Date().toISOString(),
+        },
+      ],
+      isSystemDefined: true,
+      visibility: 'public',
+      tags: ['academic', 'research', 'science'],
+    },
+  ];
+
+  groups.forEach((group) => store.addGroup(group));
+
+  console.log(`Seeded ${users.length} users, ${assertions.length} assertions, ${trustRelationships.length} trust relationships, ${groups.length} groups`);
 }

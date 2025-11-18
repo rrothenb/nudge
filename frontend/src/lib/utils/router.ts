@@ -10,6 +10,7 @@ export type Route =
   | 'chat'
   | 'profile'
   | 'trust'
+  | 'groups'
   | 'login';
 
 interface RouteConfig {
@@ -25,6 +26,7 @@ export const routes: Record<Route, RouteConfig> = {
   chat: { path: '/chat', title: 'Chat', requiresAuth: true },
   profile: { path: '/profile', title: 'Profile', requiresAuth: true },
   trust: { path: '/trust', title: 'Trust Network', requiresAuth: true },
+  groups: { path: '/groups', title: 'Groups', requiresAuth: true },
   login: { path: '/login', title: 'Login', requiresAuth: false },
 };
 

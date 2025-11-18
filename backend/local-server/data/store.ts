@@ -6,6 +6,7 @@ import type {
   Assertion,
   TrustRelationship,
   ImportJob,
+  Group,
 } from '@nudge/shared';
 
 export interface WikiArticle {
@@ -49,6 +50,7 @@ class DataStore {
   wikiCache: Map<string, WikiArticle> = new Map();
   newsCache: NewsItem[] = [];
   chatHistory: Map<string, ChatMessage[]> = new Map();
+  groups: Map<string, Group> = new Map();
 
   // User operations
   getUser(userId: string): UserProfile | undefined {
@@ -152,6 +154,23 @@ class DataStore {
     this.chatHistory.set(userId, history);
   }
 
+  // Group operations
+  getGroup(groupId: string): Group | undefined {
+    return this.groups.get(groupId);
+  }
+
+  addGroup(group: Group): void {
+    this.groups.set(group.groupId, group);
+  }
+
+  getAllGroups(): Group[] {
+    return Array.from(this.groups.values());
+  }
+
+  deleteGroup(groupId: string): void {
+    this.groups.delete(groupId);
+  }
+
   // Reset (for testing)
   reset(): void {
     this.users.clear();
@@ -161,6 +180,7 @@ class DataStore {
     this.wikiCache.clear();
     this.newsCache = [];
     this.chatHistory.clear();
+    this.groups.clear();
   }
 }
 

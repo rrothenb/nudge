@@ -8,6 +8,7 @@
     { route: 'news', label: 'News', icon: '📰' },
     { route: 'chat', label: 'Chat', icon: '💬' },
     { route: 'trust', label: 'Trust', icon: '🔗' },
+    { route: 'groups', label: 'Groups', icon: '👥' },
     { route: 'profile', label: 'Profile', icon: '👤' },
   ];
 

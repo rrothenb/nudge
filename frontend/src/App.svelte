@@ -9,6 +9,7 @@
   import ChatView from './lib/views/ChatView.svelte';
   import ProfileView from './lib/views/ProfileView.svelte';
   import TrustView from './lib/views/TrustView.svelte';
+  import GroupsView from './lib/views/GroupsView.svelte';
   import LoginView from './lib/views/LoginView.svelte';
 
   onMount(async () => {
@@ -163,6 +164,8 @@
       <ProfileView />
     {:else if $currentRoute === 'trust'}
       <TrustView />
+    {:else if $currentRoute === 'groups'}
+      <GroupsView />
     {/if}
   </main>
 

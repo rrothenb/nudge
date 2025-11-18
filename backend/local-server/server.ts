@@ -10,6 +10,7 @@ import { assertionRoutes } from './routes/assertions.js';
 import { trustRoutes } from './routes/trust.js';
 import { viewRoutes } from './routes/views.js';
 import { importRoutes } from './routes/import.js';
+import { groupRoutes } from './routes/groups.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -47,6 +48,7 @@ app.use('/api/assertions', assertionRoutes);
 app.use('/api/trust', trustRoutes);
 app.use('/api/views', viewRoutes);
 app.use('/api/import', importRoutes);
+app.use('/api/groups', groupRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
