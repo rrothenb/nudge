@@ -44,7 +44,8 @@ export interface NewsFeedItem {
   trustValue: number;
   publishedAt: string;
   url?: string;
-  score: number;               // Combined trust * recency score
+  recencyScore: number;        // 0-1, based on publication date
+  controversyScore: number;    // 0-1, variance in trust across users
 }
 
 export interface ChatMessage {

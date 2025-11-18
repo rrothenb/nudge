@@ -18,7 +18,6 @@
   let displayName = '';
   let bio = '';
   let defaultTrustThreshold = 0.5;
-  let openMindedness = 0.2;
   let defaultView: ViewType = 'wiki';
 
   // Load user data
@@ -38,7 +37,6 @@
       displayName = user.displayName;
       bio = user.bio || '';
       defaultTrustThreshold = user.defaultTrustThreshold;
-      openMindedness = user.openMindedness;
       defaultView = user.defaultView;
     }
   }
@@ -66,7 +64,6 @@
         displayName: displayName.trim(),
         bio: bio.trim() || undefined,
         defaultTrustThreshold,
-        openMindedness,
         defaultView,
       };
 
@@ -277,27 +274,6 @@
         </p>
       </div>
 
-      <!-- Open-Mindedness -->
-      <div>
-        <TrustSlider
-          bind:value={openMindedness}
-          label="Open-Mindedness Range"
-          disabled={!editing}
-        />
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-          Show content up to this much below your trust threshold. Higher values = more diverse perspectives
-        </p>
-      </div>
-
-      <!-- Effective Range Display -->
-      <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-        <p class="text-sm text-blue-800 dark:text-blue-200">
-          <strong>Effective Range:</strong>
-          You'll see content from sources with trust values between
-          <strong>{(Math.max(0, defaultTrustThreshold - openMindedness)).toFixed(2)}</strong>
-          and <strong>1.00</strong>
-        </p>
-      </div>
     </div>
   </Card>
 

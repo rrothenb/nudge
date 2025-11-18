@@ -31,7 +31,7 @@ viewRoutes.get('/wiki/:topic', (req, res) => {
 
   // Filter assertions by trust
   const user = store.getUser(userId);
-  const threshold = user ? user.defaultTrustThreshold - user.openMindedness : 0.3;
+  const threshold = user ? user.defaultTrustThreshold : 0.5;
 
   const trustedAssertions = assertions.filter((a) => {
     const trust = trustMap.get(a.sourceId) || 0.5;
@@ -87,27 +87,28 @@ viewRoutes.get('/news', (req, res) => {
   const userTrust = store.getUserTrust(userId);
   const trustMap = new Map(userTrust.map((t) => [t.targetId, t.trustValue]));
 
-  // Recalculate scores based on user's trust
+  // Calculate recency scores
   const userNews = news.map((item) => {
     const userTrustValue = trustMap.get(item.sourceId) || 0.5;
     const ageInDays =
       (Date.now() - new Date(item.publishedAt).getTime()) / (1000 * 60 * 60 * 24);
     const recencyScore = Math.max(0, 1 - ageInDays / 30);
-    const score = userTrustValue * 0.7 + recencyScore * 0.3;
 
     return {
       ...item,
       trustValue: userTrustValue,
-      score,
+      recencyScore,
+      controversyScore: 0, // TODO: Calculate from multiple users' trust values
     };
   });
 
   // Filter by trust threshold
-  const threshold = user ? user.defaultTrustThreshold - user.openMindedness : 0.3;
+  const threshold = user ? user.defaultTrustThreshold : 0.5;
   const filtered = userNews.filter((item) => item.trustValue >= threshold);
 
-  // Sort by score
-  filtered.sort((a, b) => b.score - a.score);
+  // Sort by recency (most recent first)
+  // TODO: Allow user to choose sort order (recency vs controversy)
+  filtered.sort((a, b) => b.recencyScore - a.recencyScore);
 
   // Apply limit
   const limitNum = parseInt(limit as string, 10);
@@ -140,7 +141,7 @@ viewRoutes.post('/chat', (req, res) => {
   const trustMap = new Map(userTrust.map((t) => [t.targetId, t.trustValue]));
 
   // Filter by trust
-  const threshold = user ? user.defaultTrustThreshold - user.openMindedness : 0.3;
+  const threshold = user ? user.defaultTrustThreshold : 0.5;
   const trustedAssertions = relevantAssertions.filter((a) => {
     const trust = trustMap.get(a.sourceId) || 0.5;
     return trust >= threshold;

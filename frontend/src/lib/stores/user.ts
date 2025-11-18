@@ -104,8 +104,7 @@ export const userStore = createUserStore();
  * Derived store for user preferences
  */
 export const userPreferences = derived(userStore, ($user) => ({
-  trustThreshold: $user.profile?.trustThreshold ?? 0.7,
-  openMindedness: $user.profile?.openMindedness ?? 0.2,
+  trustThreshold: $user.profile?.defaultTrustThreshold ?? 0.5,
 }));
 
 /**

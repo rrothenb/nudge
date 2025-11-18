@@ -19,7 +19,6 @@ userRoutes.get('/profile', (req, res) => {
       email: `${userId}@example.com`,
       displayName: userId.replace('user-', '').replace('-', ' '),
       defaultTrustThreshold: 0.5,
-      openMindedness: 0.2,
       showControversySignals: true,
       showAlternateViews: true,
       defaultView: 'wiki',

@@ -17,7 +17,6 @@
 
   // Trust controls
   let trustThreshold = $userPreferences.trustThreshold;
-  let openMindedness = $userPreferences.openMindedness;
 
   // Import modal
   let showImportModal = false;
@@ -186,16 +185,6 @@
           </p>
         </div>
 
-        <div>
-          <TrustSlider
-            bind:value={openMindedness}
-            label="Open-Mindedness"
-            on:change={handleRefresh}
-          />
-          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Show content slightly below your trust threshold for discovery
-          </p>
-        </div>
       </div>
     </div>
   {/if}

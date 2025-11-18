@@ -9,6 +9,7 @@ export * from './types/trust';
 export * from './types/user';
 export * from './types/content';
 export * from './types/import';
+export * from './types/group';
 
 // Constants
 export * from './constants/defaults';

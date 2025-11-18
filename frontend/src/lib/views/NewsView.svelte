@@ -158,7 +158,7 @@
   }
 
   // Filter by trust threshold
-  $: filteredNews = newsItems.filter(item => item.trustValue >= trustThreshold - $userPreferences.openMindedness);
+  $: filteredNews = newsItems.filter(item => item.trustValue >= trustThreshold);
 </script>
 
 <div class="max-w-6xl mx-auto">

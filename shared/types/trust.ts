@@ -2,7 +2,7 @@
  * Trust relationship types
  */
 
-export type TargetType = "assertion" | "source" | "user";
+export type TargetType = "assertion" | "source" | "user" | "group";
 
 export interface TrustRelationship {
   // Identity
@@ -40,7 +40,7 @@ export interface GetTrustResponse {
 
 export interface TrustGraphNode {
   id: string;
-  type: "assertion" | "source" | "user";
+  type: "assertion" | "source" | "user" | "group";
   trustValue: number;
   connections: string[];  // IDs of connected nodes
 }
