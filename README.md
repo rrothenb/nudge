@@ -114,6 +114,40 @@ nudge/
 
 ## 🚀 Quick Start
 
+### Option A: Local Development (Recommended for Testing)
+
+The fastest way to get started—no AWS account needed!
+
+```bash
+# 1. Install all dependencies
+npm run install:all
+
+# 2. Build shared types
+npm run build:shared
+
+# 3. Start the local backend (Terminal 1)
+cd backend/local-server
+npm run dev
+
+# 4. Start the frontend (Terminal 2)
+cd frontend
+npm run dev
+
+# 5. Open http://localhost:5173
+# Click "Quick Login (Demo User)" to start!
+```
+
+**What you get:**
+- ✅ Full working application locally
+- ✅ All 8 API endpoints functional
+- ✅ Seed data with 3 users, 8 assertions, 6 trust relationships
+- ✅ Mock authentication (no Cognito setup needed)
+- ✅ Hot reload for rapid iteration
+
+See [backend/local-server/README.md](backend/local-server/README.md) for more details.
+
+### Option B: AWS Deployment (Production)
+
 ### Prerequisites
 
 - Node.js 20+

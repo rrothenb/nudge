@@ -383,6 +383,12 @@ Resources:
             RestApiId: !Ref ApiGateway
             Path: /api/trust
             Method: GET
+        DeleteTrust:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /api/trust/{targetId}
+            Method: DELETE
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref TrustRelationshipsTable

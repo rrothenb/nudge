@@ -9,9 +9,7 @@
   import ChatView from './lib/views/ChatView.svelte';
   import ProfileView from './lib/views/ProfileView.svelte';
   import TrustView from './lib/views/TrustView.svelte';
-
-  // Placeholder view components (will be implemented later)
-  let LoginView: any;
+  import LoginView from './lib/views/LoginView.svelte';
 
   onMount(async () => {
     // Initialize router
@@ -37,9 +35,11 @@
 </script>
 
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-  <Header />
+  {#if $currentRoute !== 'login'}
+    <Header />
+  {/if}
 
-  <main class="container mx-auto px-4 py-8">
+  <main class="{$currentRoute === 'login' ? '' : 'container mx-auto px-4 py-8'}">
     {#if $authStore.isLoading}
       <div class="flex items-center justify-center h-64">
         <div class="text-center">
@@ -129,22 +129,7 @@
         {/if}
       </div>
     {:else if $currentRoute === 'login'}
-      <div class="max-w-md mx-auto">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-            Login
-          </h2>
-          <p class="text-gray-600 dark:text-gray-400 mb-6">
-            Login view will be implemented with AWS Cognito
-          </p>
-          <button
-            on:click={() => authStore.login('demo@example.com', 'password')}
-            class="w-full px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
-          >
-            Demo Login
-          </button>
-        </div>
-      </div>
+      <LoginView />
     {:else if $currentRoute === 'wiki'}
       <WikiView />
     {:else if $currentRoute === 'news'}
