@@ -7,10 +7,10 @@
   import WikiView from './lib/views/WikiView.svelte';
   import NewsView from './lib/views/NewsView.svelte';
   import ChatView from './lib/views/ChatView.svelte';
+  import ProfileView from './lib/views/ProfileView.svelte';
+  import TrustView from './lib/views/TrustView.svelte';
 
   // Placeholder view components (will be implemented later)
-  let ProfileView: any;
-  let TrustView: any;
   let LoginView: any;
 
   onMount(async () => {
@@ -152,27 +152,9 @@
     {:else if $currentRoute === 'chat'}
       <ChatView />
     {:else if $currentRoute === 'profile'}
-      <div class="max-w-2xl mx-auto">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-          Profile
-        </h1>
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <p class="text-gray-600 dark:text-gray-400">
-            Profile view component will be implemented here
-          </p>
-        </div>
-      </div>
+      <ProfileView />
     {:else if $currentRoute === 'trust'}
-      <div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-          Trust Network
-        </h1>
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <p class="text-gray-600 dark:text-gray-400">
-            Trust view component will be implemented here
-          </p>
-        </div>
-      </div>
+      <TrustView />
     {/if}
   </main>
 
