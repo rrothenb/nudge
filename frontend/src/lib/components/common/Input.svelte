@@ -10,6 +10,10 @@
 
   const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
 
+  function handleInput(e: Event) {
+    value = (e.target as HTMLInputElement).value;
+  }
+
   $: inputClasses = [
     'w-full px-4 py-2 rounded-md border',
     'focus:outline-none focus:ring-2',
@@ -37,12 +41,13 @@
 
   <input
     {type}
+    {value}
     {placeholder}
     {disabled}
     {required}
     id={inputId}
-    bind:value
     class={inputClasses}
+    on:input={handleInput}
     on:input
     on:change
     on:focus

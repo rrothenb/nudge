@@ -7,12 +7,17 @@
   import TrustSlider from '../components/trust/TrustSlider.svelte';
   import TrustBadge from '../components/trust/TrustBadge.svelte';
   import SourceBadge from '../components/trust/SourceBadge.svelte';
+  import TrustNetworkGraph from '../components/trust/TrustNetworkGraph.svelte';
   import { listTrust, setTrust, removeTrust, type SetTrustInput } from '../api/trust';
   import type { TrustRelationship, TargetType } from '@nudge/shared';
+  import { userStore } from '../stores/user';
 
   let relationships: TrustRelationship[] = [];
   let loading = false;
   let error = '';
+
+  // View mode
+  let viewMode: 'list' | 'graph' = 'graph';
 
   // Filter
   let filterType: TargetType | 'all' = 'all';
@@ -237,8 +242,46 @@
     </div>
   {/if}
 
-  <!-- Filters -->
-  <div class="mb-6 p-6 bg-white dark:bg-gray-800 rounded-lg shadow">
+  <!-- View Mode Toggle -->
+  <div class="mb-6 flex justify-center">
+    <div class="inline-flex rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 p-1">
+      <button
+        on:click={() => (viewMode = 'graph')}
+        class="px-6 py-2 text-sm font-medium rounded-md transition-colors {viewMode === 'graph'
+          ? 'bg-blue-600 text-white'
+          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}"
+      >
+        🕸️ Graph View
+      </button>
+      <button
+        on:click={() => (viewMode = 'list')}
+        class="px-6 py-2 text-sm font-medium rounded-md transition-colors {viewMode === 'list'
+          ? 'bg-blue-600 text-white'
+          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}"
+      >
+        📋 List View
+      </button>
+    </div>
+  </div>
+
+  {#if viewMode === 'graph'}
+    <!-- Graph View -->
+    <div class="mb-6">
+      <TrustNetworkGraph
+        userId={$userStore?.displayName || 'You'}
+        {relationships}
+        onNodeClick={(targetId) => {
+          const rel = relationships.find((r) => r.targetId === targetId);
+          if (rel) {
+            handleEditClick(rel);
+          }
+        }}
+      />
+    </div>
+  {/if}
+
+  <!-- Filters (only show in list view) -->
+  <div class="mb-6 p-6 bg-white dark:bg-gray-800 rounded-lg shadow" class:hidden={viewMode === 'graph'}>
     <div class="grid md:grid-cols-2 gap-4">
       <!-- Type filter -->
       <div>
@@ -271,8 +314,9 @@
     </div>
   </div>
 
-  <!-- Loading -->
-  {#if loading}
+  {#if viewMode === 'list'}
+    <!-- Loading -->
+    {#if loading}
     <div class="flex items-center justify-center py-12">
       <div class="text-center">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
@@ -444,6 +488,7 @@
       {/if}
     </div>
   {/if}
+{/if}
 </div>
 
 <!-- Add/Edit Modal -->
