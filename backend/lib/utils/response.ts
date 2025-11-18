@@ -2,7 +2,7 @@
  * API Gateway response helpers
  */
 import type { APIGatewayProxyResult } from 'aws-lambda';
-import { formatError } from './errors';
+import { formatError, NotFoundError, ValidationError, UnauthorizedError } from './errors';
 
 /**
  * Create a success response
@@ -23,7 +23,8 @@ export function successResponse(data: any, statusCode: number = 200): APIGateway
  * Create an error response
  */
 export function errorResponse(error: any): APIGatewayProxyResult {
-  const { statusCode, message } = formatError(error);
+  const formatted = formatError(error);
+  const statusCode = error?.statusCode || 500;
 
   return {
     statusCode,
@@ -32,7 +33,7 @@ export function errorResponse(error: any): APIGatewayProxyResult {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Credentials': true,
     },
-    body: JSON.stringify({ error: message }),
+    body: JSON.stringify(formatted),
   };
 }
 
@@ -40,14 +41,14 @@ export function errorResponse(error: any): APIGatewayProxyResult {
  * Create a 404 Not Found response
  */
 export function notFoundResponse(message: string = 'Not found'): APIGatewayProxyResult {
-  return errorResponse({ name: 'NotFoundError', message });
+  return errorResponse(new NotFoundError(message));
 }
 
 /**
  * Create a 400 Bad Request response
  */
 export function badRequestResponse(message: string = 'Bad request'): APIGatewayProxyResult {
-  return errorResponse({ name: 'ValidationError', message });
+  return errorResponse(new ValidationError(message));
 }
 
 /**
@@ -56,5 +57,5 @@ export function badRequestResponse(message: string = 'Bad request'): APIGatewayP
 export function unauthorizedResponse(
   message: string = 'Unauthorized'
 ): APIGatewayProxyResult {
-  return errorResponse({ name: 'UnauthorizedError', message });
+  return errorResponse(new UnauthorizedError(message));
 }

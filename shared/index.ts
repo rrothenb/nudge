@@ -14,7 +14,7 @@ export * from './types/import';
 export * from './constants/defaults';
 export * from './constants/config';
 
-// Validators
-export * from './validators/assertion';
-export * from './validators/trust';
-export * from './validators/user';
+// Validators (schemas only, not inferred types)
+export { createAssertionSchema, assertionTypeSchema } from './validators/assertion';
+export { setTrustSchema } from './validators/trust';
+export { updateProfileSchema } from './validators/user';

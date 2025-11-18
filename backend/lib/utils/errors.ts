@@ -3,20 +3,31 @@
  */
 
 export class NotFoundError extends Error {
-  constructor(message: string) {
+  statusCode = 404;
+
+  constructor(resourceType?: string, resourceId?: string) {
+    const message = resourceType && resourceId
+      ? `${resourceType} not found: ${resourceId}`
+      : resourceType || 'Resource not found';
     super(message);
     this.name = 'NotFoundError';
   }
 }
 
 export class ValidationError extends Error {
-  constructor(message: string) {
+  statusCode = 400;
+  details?: any;
+
+  constructor(message: string, details?: any) {
     super(message);
     this.name = 'ValidationError';
+    this.details = details;
   }
 }
 
 export class ConflictError extends Error {
+  statusCode = 409;
+
   constructor(message: string) {
     super(message);
     this.name = 'ConflictError';
@@ -24,7 +35,9 @@ export class ConflictError extends Error {
 }
 
 export class UnauthorizedError extends Error {
-  constructor(message: string) {
+  statusCode = 401;
+
+  constructor(message: string = 'Unauthorized') {
     super(message);
     this.name = 'UnauthorizedError';
   }
@@ -40,21 +53,28 @@ export function isConditionalCheckFailure(error: any): boolean {
 /**
  * Format error for API response
  */
-export function formatError(error: any): { statusCode: number; message: string } {
+export function formatError(error: any): { error: string; code: string; details?: any } {
   if (error instanceof NotFoundError) {
-    return { statusCode: 404, message: error.message };
+    return { error: error.message, code: 'NOT_FOUND' };
   }
   if (error instanceof ValidationError) {
-    return { statusCode: 400, message: error.message };
+    const result: { error: string; code: string; details?: any } = {
+      error: error.message,
+      code: 'VALIDATION_ERROR',
+    };
+    if (error.details) {
+      result.details = error.details;
+    }
+    return result;
   }
   if (error instanceof ConflictError) {
-    return { statusCode: 409, message: error.message };
+    return { error: error.message, code: 'CONFLICT' };
   }
   if (error instanceof UnauthorizedError) {
-    return { statusCode: 401, message: error.message };
+    return { error: error.message, code: 'UNAUTHORIZED' };
   }
 
   // Log unexpected errors
   console.error('Unexpected error:', error);
-  return { statusCode: 500, message: 'Internal server error' };
+  return { error: 'Internal server error', code: 'INTERNAL_ERROR' };
 }
