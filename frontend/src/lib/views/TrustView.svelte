@@ -152,6 +152,8 @@
         return '📰';
       case 'assertion':
         return '💬';
+      case 'group':
+        return '👥';
     }
   }
 
@@ -179,6 +181,7 @@
     user: filteredRelationships.filter((r) => r.targetType === 'user'),
     source: filteredRelationships.filter((r) => r.targetType === 'source'),
     assertion: filteredRelationships.filter((r) => r.targetType === 'assertion'),
+    group: filteredRelationships.filter((r) => r.targetType === 'group'),
   };
 
   // Statistics
@@ -187,6 +190,7 @@
     users: relationships.filter((r) => r.targetType === 'user').length,
     sources: relationships.filter((r) => r.targetType === 'source').length,
     assertions: relationships.filter((r) => r.targetType === 'assertion').length,
+    groups: relationships.filter((r) => r.targetType === 'group').length,
     direct: relationships.filter((r) => r.isDirectTrust).length,
     propagated: relationships.filter((r) => !r.isDirectTrust).length,
   };
@@ -205,17 +209,11 @@
   </div>
 
   <!-- Statistics -->
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+  <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
     <Card padding="md">
       <div class="text-center">
         <p class="text-3xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
         <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Total</p>
-      </div>
-    </Card>
-    <Card padding="md">
-      <div class="text-center">
-        <p class="text-3xl font-bold text-gray-900 dark:text-white">{stats.direct}</p>
-        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Direct</p>
       </div>
     </Card>
     <Card padding="md">
@@ -228,6 +226,18 @@
       <div class="text-center">
         <p class="text-3xl font-bold text-gray-900 dark:text-white">{stats.users}</p>
         <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Users</p>
+      </div>
+    </Card>
+    <Card padding="md">
+      <div class="text-center">
+        <p class="text-3xl font-bold text-gray-900 dark:text-white">{stats.groups}</p>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Groups</p>
+      </div>
+    </Card>
+    <Card padding="md">
+      <div class="text-center">
+        <p class="text-3xl font-bold text-gray-900 dark:text-white">{stats.assertions}</p>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Assertions</p>
       </div>
     </Card>
   </div>
@@ -289,7 +299,7 @@
           Filter by Type
         </label>
         <div class="flex gap-2 flex-wrap">
-          {#each [['all', 'All'], ['user', 'Users'], ['source', 'Sources'], ['assertion', 'Assertions']] as [type, label]}
+          {#each [['all', 'All'], ['source', 'Sources'], ['user', 'Users'], ['group', 'Groups'], ['assertion', 'Assertions']] as [type, label]}
             <button
               on:click={() => (filterType = type)}
               class="px-4 py-2 text-sm rounded-md transition-colors {filterType === type
@@ -437,6 +447,56 @@
         {/if}
       {/if}
 
+      {#if filterType === 'all' || filterType === 'group'}
+        {#if groupedRelationships.group.length > 0}
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+              👥 Groups ({groupedRelationships.group.length})
+            </h3>
+            <div class="space-y-3">
+              {#each groupedRelationships.group as rel (rel.targetId)}
+                <Card padding="md" hover>
+                  <div class="flex items-center justify-between gap-4">
+                    <div class="flex-1">
+                      <div class="flex items-center gap-2">
+                        <span class="text-lg">👥</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">
+                          {rel.targetId}
+                        </span>
+                      </div>
+                      {#if rel.notes}
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                          {rel.notes}
+                        </p>
+                      {/if}
+                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Updated {formatDate(rel.lastUpdated)}
+                        {#if !rel.isDirectTrust}
+                          • Propagated
+                        {/if}
+                      </p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <TrustBadge value={rel.trustValue} size="sm" />
+                      {#if rel.isDirectTrust}
+                        <div class="flex gap-2">
+                          <Button variant="secondary" on:click={() => handleEditClick(rel)}>
+                            Edit
+                          </Button>
+                          <Button variant="danger" on:click={() => handleRemove(rel)}>
+                            Remove
+                          </Button>
+                        </div>
+                      {/if}
+                    </div>
+                  </div>
+                </Card>
+              {/each}
+            </div>
+          </div>
+        {/if}
+      {/if}
+
       {#if filterType === 'all' || filterType === 'assertion'}
         {#if groupedRelationships.assertion.length > 0}
           <div>
@@ -519,6 +579,7 @@
       >
         <option value="source">📰 Source</option>
         <option value="user">👤 User</option>
+        <option value="group">👥 Group</option>
         <option value="assertion">💬 Assertion</option>
       </select>
     </div>
@@ -532,7 +593,9 @@
         ? 'e.g., Wikipedia, NYT, BBC'
         : modalTargetType === 'user'
           ? 'e.g., user-uuid'
-          : 'e.g., assertion-uuid'}
+          : modalTargetType === 'group'
+            ? 'e.g., group-climate-scientists'
+            : 'e.g., assertion-uuid'}
       disabled={modalLoading || modalMode === 'edit'}
     />
 

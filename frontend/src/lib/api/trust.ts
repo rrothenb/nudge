@@ -6,8 +6,9 @@ import apiClient, { handleApiError } from './client';
 
 export interface SetTrustInput {
   targetId: string;
-  targetType: 'user' | 'source' | 'assertion';
+  targetType: 'user' | 'source' | 'assertion' | 'group';
   trustValue: number;
+  notes?: string;
 }
 
 /**

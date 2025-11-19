@@ -10,6 +10,8 @@
   import ProfileView from './lib/views/ProfileView.svelte';
   import TrustView from './lib/views/TrustView.svelte';
   import GroupsView from './lib/views/GroupsView.svelte';
+  import GroupDetailView from './lib/views/GroupDetailView.svelte';
+  import OnboardingView from './lib/views/OnboardingView.svelte';
   import LoginView from './lib/views/LoginView.svelte';
 
   onMount(async () => {
@@ -36,11 +38,11 @@
 </script>
 
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-  {#if $currentRoute !== 'login'}
+  {#if $currentRoute !== 'login' && $currentRoute !== 'onboarding'}
     <Header />
   {/if}
 
-  <main class="{$currentRoute === 'login' ? '' : 'container mx-auto px-4 py-8'}">
+  <main class="{$currentRoute === 'login' || $currentRoute === 'onboarding' ? '' : 'container mx-auto px-4 py-8'}">
     {#if $authStore.isLoading}
       <div class="flex items-center justify-center h-64">
         <div class="text-center">
@@ -166,6 +168,10 @@
       <TrustView />
     {:else if $currentRoute === 'groups'}
       <GroupsView />
+    {:else if $currentRoute === 'group-detail'}
+      <GroupDetailView />
+    {:else if $currentRoute === 'onboarding'}
+      <OnboardingView />
     {/if}
   </main>
 

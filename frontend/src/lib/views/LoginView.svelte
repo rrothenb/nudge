@@ -48,7 +48,8 @@
     const success = await authStore.signup(email, password, displayName);
 
     if (success) {
-      navigate('wiki'); // Redirect to default view
+      // New users go to onboarding
+      navigate('onboarding');
     } else {
       error = 'Signup failed. Please try again.';
       loading = false;

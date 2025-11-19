@@ -4,13 +4,16 @@
   import Button from '../components/common/Button.svelte';
   import GroupCard from '../components/groups/GroupCard.svelte';
   import CreateGroupModal from '../components/groups/CreateGroupModal.svelte';
+  import TrustSetterModal from '../components/trust/TrustSetterModal.svelte';
   import { getGroups } from '../api/groups';
-  import { setTrust } from '../api/trust';
+  import { navigate } from '../utils/router';
 
   let groups: Group[] = [];
   let loading = true;
   let error = '';
   let showCreateModal = false;
+  let showTrustModal = false;
+  let selectedGroup: Group | null = null;
   let filterType: 'all' | 'system' | 'mine' | 'public' = 'all';
 
   onMount(() => {
@@ -32,35 +35,18 @@
   }
 
   function handleViewGroup(group: Group) {
-    // TODO: Navigate to group detail view or show modal
-    console.log('View group:', group);
+    navigate('group-detail', { groupId: group.groupId });
   }
 
-  async function handleTrustGroup(group: Group) {
-    // Prompt for trust value
-    const trustValue = prompt(
-      `Set trust level for "${group.name}" (0-1):`,
-      '0.7'
-    );
+  function handleTrustGroup(group: Group) {
+    selectedGroup = group;
+    showTrustModal = true;
+  }
 
-    if (trustValue === null) return;
-
-    const value = parseFloat(trustValue);
-    if (isNaN(value) || value < 0 || value > 1) {
-      alert('Please enter a value between 0 and 1');
-      return;
-    }
-
-    try {
-      await setTrust({
-        targetId: group.groupId,
-        targetType: 'group',
-        trustValue: value,
-      });
-      alert(`Trust set to ${value} for ${group.name}`);
-    } catch (e: any) {
-      alert(`Failed to set trust: ${e.message}`);
-    }
+  function handleTrustSaved(event: CustomEvent<{ targetId: string; trustValue: number }>) {
+    const { trustValue } = event.detail;
+    // Could show a toast notification here
+    console.log(`Trust set to ${trustValue} for ${selectedGroup?.name}`);
   }
 
   function handleGroupCreated(event: CustomEvent<Group>) {
@@ -185,3 +171,15 @@
   bind:show={showCreateModal}
   on:created={handleGroupCreated}
 />
+
+<!-- Trust Setter Modal -->
+{#if selectedGroup}
+  <TrustSetterModal
+    bind:show={showTrustModal}
+    targetId={selectedGroup.groupId}
+    targetType="group"
+    targetName={selectedGroup.name}
+    initialValue={0.5}
+    on:saved={handleTrustSaved}
+  />
+{/if}

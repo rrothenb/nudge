@@ -11,6 +11,8 @@ export type Route =
   | 'profile'
   | 'trust'
   | 'groups'
+  | 'group-detail'
+  | 'onboarding'
   | 'login';
 
 interface RouteConfig {
@@ -27,6 +29,8 @@ export const routes: Record<Route, RouteConfig> = {
   profile: { path: '/profile', title: 'Profile', requiresAuth: true },
   trust: { path: '/trust', title: 'Trust Network', requiresAuth: true },
   groups: { path: '/groups', title: 'Groups', requiresAuth: true },
+  'group-detail': { path: '/groups/:groupId', title: 'Group', requiresAuth: true },
+  onboarding: { path: '/onboarding', title: 'Setup', requiresAuth: true },
   login: { path: '/login', title: 'Login', requiresAuth: false },
 };
 
