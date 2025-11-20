@@ -7,6 +7,7 @@
   import TrustSetterModal from '../components/trust/TrustSetterModal.svelte';
   import { getGroups } from '../api/groups';
   import { navigate } from '../utils/router';
+  import { user } from '../stores/user';
 
   let groups: Group[] = [];
   let loading = true;
@@ -56,7 +57,7 @@
   $: filteredGroups = groups.filter((g) => {
     if (filterType === 'all') return true;
     if (filterType === 'system') return g.isSystemDefined;
-    if (filterType === 'mine') return !g.isSystemDefined && g.createdBy === 'current-user'; // TODO: Use actual userId
+    if (filterType === 'mine') return !g.isSystemDefined && g.createdBy === $user?.userId;
     if (filterType === 'public') return g.visibility === 'public';
     return true;
   });

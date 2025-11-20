@@ -63,9 +63,32 @@ export async function computeUserTrustNetwork(
 
   for (const [nodeId, value] of trustValues.entries()) {
     const sources = identifyTrustSources(graph, nodeId, 0.1);
+
+    // Compute confidence based on:
+    // 1. Number of sources (more sources = higher confidence)
+    // 2. Average contribution strength
+    // 3. Controversy (variance in contributions)
+    let confidence = DEFAULT_TRUST_VALUE;
+    if (sources.length > 0) {
+      const avgContribution = sources.reduce((sum, s) => sum + s.contribution, 0) / sources.length;
+      const variance = sources.reduce((sum, s) =>
+        sum + Math.pow(s.contribution - avgContribution, 2), 0) / sources.length;
+
+      // Base confidence from number of sources (more sources = higher confidence)
+      const sourceConfidence = Math.min(sources.length / 3, 1.0); // Max at 3 sources
+      // Strength confidence from average contribution
+      const strengthConfidence = avgContribution;
+      // Controversy penalty (high variance = lower confidence)
+      const controversyPenalty = Math.min(variance * 2, 0.3);
+
+      confidence = Math.max(0, Math.min(1,
+        (sourceConfidence * 0.4 + strengthConfidence * 0.6) - controversyPenalty
+      ));
+    }
+
     propagatedValues.set(nodeId, {
       value,
-      confidence: 0.8, // TODO: Compute actual confidence
+      confidence,
       sources: sources.map((s) => s.sourceId),
     });
   }

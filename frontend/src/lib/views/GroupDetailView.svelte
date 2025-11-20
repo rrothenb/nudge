@@ -5,6 +5,7 @@
   import TrustSetterModal from '../components/trust/TrustSetterModal.svelte';
   import { getGroup, deleteGroup, removeGroupMember, addGroupMember } from '../api/groups';
   import { navigate, routeParams } from '../utils/router';
+  import { user } from '../stores/user';
 
   let group: Group | null = null;
   let loading = true;
@@ -114,8 +115,8 @@
     if (!group) return false;
     // System groups cannot be edited
     if (group.isSystemDefined) return false;
-    // TODO: Check if current user is the creator
-    return true;
+    // Only the creator can edit
+    return group.createdBy === $user?.userId;
   }
 </script>
 
