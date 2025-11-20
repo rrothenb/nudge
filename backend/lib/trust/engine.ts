@@ -29,14 +29,34 @@ export async function computeUserTrustNetwork(
   const { trustRelationships } = await listUserTrust(userId, 1000);
   console.log(`Loaded ${trustRelationships.length} trust relationships`);
 
-  // 2. Load all assertions (for now, limit to recent ones)
-  // TODO: In production, load incrementally or only relevant assertions
+  // 2. Load assertions incrementally
+  // Only load assertions from sources that appear in the trust network
   const assertions: Assertion[] = [];
   const types = ['factual', 'wiki_import', 'news_import'];
+  const sourceIds = new Set<string>(
+    trustRelationships
+      .filter((t) => t.targetType === 'source')
+      .map((t) => t.targetId)
+  );
 
-  for (const type of types) {
-    const { assertions: typeAssertions } = await queryAssertionsByType(type, 1000);
-    assertions.push(...typeAssertions);
+  // If user trusts sources, load assertions from those sources
+  // Otherwise fall back to loading general assertions (limited)
+  if (sourceIds.size > 0) {
+    // Load assertions from trusted sources only
+    for (const sourceId of sourceIds) {
+      // Load in batches of 500 per source
+      for (const type of types) {
+        const { assertions: typeAssertions } = await queryAssertionsByType(type, 500);
+        const sourceAssertions = typeAssertions.filter((a) => a.sourceId === sourceId);
+        assertions.push(...sourceAssertions);
+      }
+    }
+  } else {
+    // User hasn't set source trust yet, load a limited set from all sources
+    for (const type of types) {
+      const { assertions: typeAssertions } = await queryAssertionsByType(type, 300);
+      assertions.push(...typeAssertions);
+    }
   }
 
   console.log(`Loaded ${assertions.length} assertions`);

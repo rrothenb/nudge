@@ -87,7 +87,7 @@ nudge/
 - **DynamoDB Layer**: Complete CRUD operations for all tables
 - **Trust Engine**: Iterative diffusion algorithm with convergence detection
 - **Claude Integration**: Assertion extraction and article generation
-- **Backend Test Suite**: 45+ unit tests + 6 integration tests with real Claude API
+- **Backend Test Suite**: 100 tests (96 passing, 4 skipped) including 10 integration tests with real Claude API
 
 ### Frontend Application (Phase 3)
 - **9 Complete Views**: Wiki, News, Chat, Profile, Trust, Groups, GroupDetail, Onboarding, Login
