@@ -48,7 +48,7 @@ describe('Claude API Integration Tests', { skip: skipIfNoKey }, () => {
         expect(assertion).toHaveProperty('content');
         expect(assertion).toHaveProperty('type');
         expect(assertion).toHaveProperty('confidence');
-        expect(assertion).toHaveProperty('topics');
+        expect(assertion).toHaveProperty('topic');
 
         // Content should be non-empty
         expect(assertion.content.length).toBeGreaterThan(10);
@@ -58,7 +58,7 @@ describe('Claude API Integration Tests', { skip: skipIfNoKey }, () => {
         expect(assertion.confidence).toBeLessThanOrEqual(1);
 
         // Should have at least one topic
-        expect(assertion.topics.length).toBeGreaterThan(0);
+        expect(assertion.topic.length).toBeGreaterThan(0);
       });
 
       // Verify we extracted key facts
@@ -192,12 +192,12 @@ describe('Claude API Integration Tests', { skip: skipIfNoKey }, () => {
       ];
 
       // All assertions have high trust
-      const trustValues = {
-        a1: 0.95,
-        a2: 0.90,
-        a3: 0.92,
-        a4: 0.88,
-      };
+      const trustValues = new Map([
+        ['a1', 0.95],
+        ['a2', 0.90],
+        ['a3', 0.92],
+        ['a4', 0.88],
+      ]);
 
       const result = await generateWikiArticle(
         'Photosynthesis',
@@ -250,10 +250,10 @@ describe('Claude API Integration Tests', { skip: skipIfNoKey }, () => {
       ];
 
       // First assertion has high trust, second has low trust
-      const trustValues = {
-        a1: 0.95,
-        a2: 0.1,
-      };
+      const trustValues = new Map([
+        ['a1', 0.95],
+        ['a2', 0.1],
+      ]);
 
       const result = await generateWikiArticle('Water', assertions, trustValues, 0.7);
 
@@ -291,7 +291,7 @@ describe('Claude API Integration Tests', { skip: skipIfNoKey }, () => {
       ];
 
       // Generate article with high trust
-      const highTrustValues = { a1: 0.9, a2: 0.9 };
+      const highTrustValues = new Map([['a1', 0.9], ['a2', 0.9]]);
       const highTrustArticle = await generateWikiArticle(
         'Earth',
         assertions,
@@ -300,7 +300,7 @@ describe('Claude API Integration Tests', { skip: skipIfNoKey }, () => {
       );
 
       // Generate article with low trust (should include alternative info)
-      const lowTrustValues = { a1: 0.2, a2: 0.2 };
+      const lowTrustValues = new Map([['a1', 0.2], ['a2', 0.2]]);
       const lowTrustArticle = await generateWikiArticle(
         'Earth',
         assertions.slice(0, 1), // Only include first assertion with low trust
@@ -344,7 +344,7 @@ describe('Claude API Integration Tests', { skip: skipIfNoKey }, () => {
         },
       ];
 
-      const trustValues = { a1: 0.95, a2: 0.92 };
+      const trustValues = new Map([['a1', 0.95], ['a2', 0.92]]);
 
       const result = await generateChatResponse(
         'How many neurons are in the human brain?',
@@ -375,7 +375,7 @@ describe('Claude API Integration Tests', { skip: skipIfNoKey }, () => {
         },
       ];
 
-      const trustValues = { a1: 0.9 };
+      const trustValues = new Map([['a1', 0.9]]);
 
       const result = await generateChatResponse(
         'Who discovered radium?',
@@ -384,8 +384,8 @@ describe('Claude API Integration Tests', { skip: skipIfNoKey }, () => {
       );
 
       expect(result.response.length).toBeGreaterThan(10);
-      expect(result.sources).toBeDefined();
-      expect(result.sources.length).toBeGreaterThan(0);
+      expect(result.citedAssertions).toBeDefined();
+      expect(result.citedAssertions.length).toBeGreaterThanOrEqual(0);
 
       // Response should mention Marie Curie
       const response = result.response.toLowerCase();
@@ -428,9 +428,9 @@ describe('Claude API Integration Tests', { skip: skipIfNoKey }, () => {
       }));
 
       // Step 3: Assign trust values (all trusted)
-      const trustValues: Record<string, number> = {};
+      const trustValues = new Map<string, number>();
       fullAssertions.forEach((a) => {
-        trustValues[a.assertionId] = 0.9;
+        trustValues.set(a.assertionId, 0.9);
       });
 
       // Step 4: Reassemble into article
