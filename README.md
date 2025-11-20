@@ -11,6 +11,9 @@ This system treats **trust as a primitive** rather than content. Every piece of 
 - **Wiki View**: Topic-organized knowledge browser with trust-filtered articles
 - **News View**: Time-ordered feed of news with trust-based ranking
 - **Chat View**: AI Q&A interface using only trusted assertions
+- **Trust Management**: Visualize and manage your trust network with interactive graphs
+- **Group Management**: Create and manage groups of trusted entities (users, sources)
+- **User Onboarding**: Guided onboarding flow with trust calibration
 - **Trust Propagation**: Automatic inference of trust through your network
 - **Content Import**: Wikipedia and news article import with assertion extraction
 
@@ -87,8 +90,8 @@ nudge/
 - **Backend Test Suite**: 45+ unit tests + 6 integration tests with real Claude API
 
 ### Frontend Application (Phase 3)
-- **5 Complete Views**: Wiki, News, Chat, Profile, Trust Management
-- **Reusable Components**: 10+ components (buttons, inputs, cards, modals, trust visualizations)
+- **9 Complete Views**: Wiki, News, Chat, Profile, Trust, Groups, GroupDetail, Onboarding, Login
+- **Reusable Components**: 25+ components (buttons, inputs, cards, modals, trust visualizations, group management)
 - **Client-Side Routing**: Hash-based router with protected routes
 - **State Management**: Svelte stores for auth, user, and app state
 - **API Integration**: Full axios-based client with JWT auth and error handling
@@ -411,6 +414,10 @@ All endpoints require Cognito JWT token in `Authorization` header.
 - `ChatView.svelte` - Q&A interface with source citations
 - `ProfileView.svelte` - User profile and preferences management
 - `TrustView.svelte` - Trust network visualization and management
+- `GroupsView.svelte` - Group management and creation
+- `GroupDetailView.svelte` - Individual group details and member management
+- `OnboardingView.svelte` - Guided onboarding and trust calibration
+- `LoginView.svelte` - Authentication interface
 
 ### Layout Components
 - `Header.svelte` - Navigation bar with route highlighting and user menu
@@ -473,13 +480,17 @@ CloudWatch dashboards track:
 ### Phase 3: Frontend ✅ (Complete)
 - ✅ Core infrastructure (router, API client, stores)
 - ✅ Common UI components (Button, Input, Card, Modal, Spinner)
-- ✅ Trust components (TrustSlider, TrustBadge, SourceBadge)
+- ✅ Trust components (TrustSlider, TrustBadge, SourceBadge, TrustNetworkGraph, TrustSetterModal)
 - ✅ Content components (AssertionCard, ArticleView)
+- ✅ Group components (GroupCard, CreateGroupModal)
 - ✅ Wiki view implementation with search and import
 - ✅ News view implementation with trust-ranked feed
 - ✅ Chat view implementation with source citations
 - ✅ User profile management UI with preferences
-- ✅ Trust relationship management UI with filtering
+- ✅ Trust relationship management UI with filtering and visualization
+- ✅ Group management UI with create, edit, and member management
+- ✅ User onboarding flow with trust calibration
+- ✅ User self-provisioning on first login
 - ✅ Frontend test suite (27 unit tests)
 
 ### Phase 4: Deployment & Polish (Next)

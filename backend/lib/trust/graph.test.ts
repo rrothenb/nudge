@@ -8,7 +8,7 @@ describe('TrustGraph', () => {
   let graph: TrustGraph;
 
   beforeEach(() => {
-    graph = new TrustGraph();
+    graph = new TrustGraph('test-user');
   });
 
   describe('addNode', () => {
@@ -24,7 +24,7 @@ describe('TrustGraph', () => {
 
       expect(graph.getTrustValue('user1')).toBe(1.0);
       expect(graph.getTrustValue('source1')).toBe(0.5);
-      expect(graph.getTrustValue('assertion1')).toBe(0);
+      expect(graph.getTrustValue('assertion1')).toBe(0.5); // DEFAULT_TRUST_VALUE
     });
 
     it('should update existing node trust value', () => {
@@ -41,53 +41,53 @@ describe('TrustGraph', () => {
     });
 
     it('should add an edge between nodes', () => {
-      graph.addEdge('user1', 'user2', 0.8, 'direct');
-      const neighbors = graph.getNeighbors('user1');
-      expect(neighbors).toHaveLength(1);
-      expect(neighbors[0].targetId).toBe('user2');
-      expect(neighbors[0].weight).toBe(0.8);
+      graph.addEdge('user1', 'user2', 0.8, 'trust');
+      const edges = graph.getOutgoingEdges('user1');
+      expect(edges).toHaveLength(1);
+      expect(edges[0].to).toBe('user2');
+      expect(edges[0].weight).toBe(0.8);
     });
 
     it('should handle multiple edges from one node', () => {
       graph.addNode('user3', 'user', 0.0);
-      graph.addEdge('user1', 'user2', 0.8, 'direct');
-      graph.addEdge('user1', 'user3', 0.6, 'direct');
+      graph.addEdge('user1', 'user2', 0.8, 'trust');
+      graph.addEdge('user1', 'user3', 0.6, 'trust');
 
-      const neighbors = graph.getNeighbors('user1');
-      expect(neighbors).toHaveLength(2);
+      const edges = graph.getOutgoingEdges('user1');
+      expect(edges).toHaveLength(2);
     });
 
     it('should handle different edge types', () => {
-      graph.addEdge('user1', 'user2', 0.8, 'direct');
+      graph.addEdge('user1', 'user2', 0.8, 'trust');
       graph.addNode('assertion1', 'assertion');
-      graph.addEdge('user1', 'assertion1', 0.9, 'attribution');
+      graph.addEdge('user1', 'assertion1', 0.9, 'authored');
 
-      const neighbors = graph.getNeighbors('user1');
-      expect(neighbors.find((n) => n.type === 'direct')).toBeDefined();
-      expect(neighbors.find((n) => n.type === 'attribution')).toBeDefined();
+      const edges = graph.getOutgoingEdges('user1');
+      expect(edges.find((e) => e.type === 'trust')).toBeDefined();
+      expect(edges.find((e) => e.type === 'authored')).toBeDefined();
     });
   });
 
-  describe('getNeighbors', () => {
+  describe('getOutgoingEdges', () => {
     it('should return empty array for node with no edges', () => {
       graph.addNode('user1', 'user', 1.0);
-      expect(graph.getNeighbors('user1')).toHaveLength(0);
+      expect(graph.getOutgoingEdges('user1')).toHaveLength(0);
     });
 
     it('should return empty array for non-existent node', () => {
-      expect(graph.getNeighbors('nonexistent')).toHaveLength(0);
+      expect(graph.getOutgoingEdges('nonexistent')).toHaveLength(0);
     });
 
-    it('should return all neighbors', () => {
+    it('should return all outgoing edges', () => {
       graph.addNode('user1', 'user', 1.0);
       graph.addNode('user2', 'user', 0.0);
       graph.addNode('user3', 'user', 0.0);
 
-      graph.addEdge('user1', 'user2', 0.8, 'direct');
-      graph.addEdge('user1', 'user3', 0.6, 'direct');
+      graph.addEdge('user1', 'user2', 0.8, 'trust');
+      graph.addEdge('user1', 'user3', 0.6, 'trust');
 
-      const neighbors = graph.getNeighbors('user1');
-      expect(neighbors).toHaveLength(2);
+      const edges = graph.getOutgoingEdges('user1');
+      expect(edges).toHaveLength(2);
     });
   });
 
@@ -108,8 +108,8 @@ describe('TrustGraph', () => {
   });
 
   describe('getTrustValue', () => {
-    it('should return 0 for non-existent node', () => {
-      expect(graph.getTrustValue('nonexistent')).toBe(0);
+    it('should return DEFAULT_TRUST_VALUE for non-existent node', () => {
+      expect(graph.getTrustValue('nonexistent')).toBe(0.5);
     });
 
     it('should return correct trust value', () => {
@@ -118,25 +118,25 @@ describe('TrustGraph', () => {
     });
   });
 
-  describe('setTrustValue', () => {
-    it('should set trust value for existing node', () => {
+  describe('setComputedTrust', () => {
+    it('should set computed trust value for existing node', () => {
       graph.addNode('user1', 'user', 0.5);
-      graph.setTrustValue('user1', 0.9);
+      graph.setComputedTrust('user1', 0.9);
       expect(graph.getTrustValue('user1')).toBe(0.9);
     });
 
     it('should do nothing for non-existent node', () => {
-      graph.setTrustValue('nonexistent', 0.9);
-      expect(graph.getTrustValue('nonexistent')).toBe(0);
+      graph.setComputedTrust('nonexistent', 0.9);
+      expect(graph.getTrustValue('nonexistent')).toBe(0.5);
     });
 
-    it('should clamp trust value to [0, 1]', () => {
+    it('should accept values outside [0, 1] (no clamping in new API)', () => {
       graph.addNode('user1', 'user', 0.5);
-      graph.setTrustValue('user1', 1.5);
-      expect(graph.getTrustValue('user1')).toBe(1);
+      graph.setComputedTrust('user1', 1.5);
+      expect(graph.getTrustValue('user1')).toBe(1.5);
 
-      graph.setTrustValue('user1', -0.5);
-      expect(graph.getTrustValue('user1')).toBe(0);
+      graph.setComputedTrust('user1', -0.5);
+      expect(graph.getTrustValue('user1')).toBe(-0.5);
     });
   });
 
@@ -147,12 +147,12 @@ describe('TrustGraph', () => {
       graph.addNode('user2', 'user', 0.0);
       graph.addNode('user3', 'user', 0.0);
 
-      graph.addEdge('user1', 'user2', 0.8, 'direct');
-      graph.addEdge('user2', 'user3', 0.7, 'direct');
+      graph.addEdge('user1', 'user2', 0.8, 'trust');
+      graph.addEdge('user2', 'user3', 0.7, 'trust');
 
-      expect(graph.getNeighbors('user1')).toHaveLength(1);
-      expect(graph.getNeighbors('user2')).toHaveLength(1);
-      expect(graph.getNeighbors('user3')).toHaveLength(0);
+      expect(graph.getOutgoingEdges('user1')).toHaveLength(1);
+      expect(graph.getOutgoingEdges('user2')).toHaveLength(1);
+      expect(graph.getOutgoingEdges('user3')).toHaveLength(0);
     });
 
     it('should handle star topology', () => {
@@ -160,27 +160,27 @@ describe('TrustGraph', () => {
       graph.addNode('center', 'user', 1.0);
       for (let i = 1; i <= 5; i++) {
         graph.addNode(`user${i}`, 'user', 0.0);
-        graph.addEdge('center', `user${i}`, 0.5 + i * 0.1, 'direct');
+        graph.addEdge('center', `user${i}`, 0.5 + i * 0.1, 'trust');
       }
 
-      expect(graph.getNeighbors('center')).toHaveLength(5);
+      expect(graph.getOutgoingEdges('center')).toHaveLength(5);
       expect(graph.getAllNodes()).toHaveLength(6);
     });
 
     it('should handle cycle in graph', () => {
       // user1 -> user2 -> user3 -> user1
       graph.addNode('user1', 'user', 1.0);
-      graph.addNode('user2', user', 0.0);
+      graph.addNode('user2', 'user', 0.0);
       graph.addNode('user3', 'user', 0.0);
 
-      graph.addEdge('user1', 'user2', 0.8, 'direct');
-      graph.addEdge('user2', 'user3', 0.7, 'direct');
-      graph.addEdge('user3', 'user1', 0.6, 'direct');
+      graph.addEdge('user1', 'user2', 0.8, 'trust');
+      graph.addEdge('user2', 'user3', 0.7, 'trust');
+      graph.addEdge('user3', 'user1', 0.6, 'trust');
 
       expect(graph.getAllNodes()).toHaveLength(3);
-      expect(graph.getNeighbors('user1')).toHaveLength(1);
-      expect(graph.getNeighbors('user2')).toHaveLength(1);
-      expect(graph.getNeighbors('user3')).toHaveLength(1);
+      expect(graph.getOutgoingEdges('user1')).toHaveLength(1);
+      expect(graph.getOutgoingEdges('user2')).toHaveLength(1);
+      expect(graph.getOutgoingEdges('user3')).toHaveLength(1);
     });
   });
 });

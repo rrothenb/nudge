@@ -134,6 +134,7 @@ describe('Response Utilities', () => {
       expect(response.statusCode).toBe(400);
       expect(JSON.parse(response.body)).toEqual({
         error: 'Invalid request',
+        code: 'VALIDATION_ERROR',
       });
     });
 
