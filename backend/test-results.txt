@@ -1,0 +1,1420 @@
+
+> @nudge/backend@1.0.0 test
+> vitest
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ DEV  v2.1.9 /home/user/nudge/backend
+
+stderr | lib/utils/errors.test.ts > Error Utilities > formatError > should format generic Error as internal error
+Unexpected error: Error: Something went wrong
+    at /home/user/nudge/backend/lib/utils/errors.test.ts:98:21
+    at file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:146:14
+    at file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:533:11
+    at runWithTimeout (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:39:7)
+    at runTest (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1056:17)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runSuite (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runFiles (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1262:5)
+
+stderr | lib/utils/errors.test.ts > Error Utilities > formatError > should handle unknown error types
+Unexpected error: string error
+
+ ✓ lib/utils/errors.test.ts (11 tests) 13ms
+stderr | lib/utils/response.test.ts > Response Utilities > errorResponse > should create 500 response for generic Error
+Unexpected error: Error: Something went wrong
+    at /home/user/nudge/backend/lib/utils/response.test.ts:88:21
+    at file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:146:14
+    at file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:533:11
+    at runWithTimeout (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:39:7)
+    at runTest (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1056:17)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runSuite (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runFiles (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1262:5)
+
+stderr | lib/utils/response.test.ts > Response Utilities > errorResponse > should handle string errors
+Unexpected error: String error message
+
+stderr | lib/utils/response.test.ts > Response Utilities > errorResponse > should include CORS headers
+Unexpected error: Error: Test
+    at /home/user/nudge/backend/lib/utils/response.test.ts:109:21
+    at file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:146:14
+    at file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:533:11
+    at runWithTimeout (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:39:7)
+    at runTest (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1056:17)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runSuite (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runFiles (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1262:5)
+
+ ✓ lib/utils/response.test.ts (15 tests) 14ms
+ ✓ lib/utils/auth.test.ts (7 tests) 6ms
+ ✓ lib/trust/graph.test.ts (19 tests) 11ms
+stdout | lib/trust/propagation.test.ts > Trust Propagation > propagateTrust > should propagate trust through single hop
+Starting trust propagation for 1 nodes
+Trust propagation converged after 2 iterations
+
+stdout | lib/trust/propagation.test.ts > Trust Propagation > propagateTrust > should propagate trust through multiple hops
+Starting trust propagation for 2 nodes
+Trust propagation converged after 2 iterations
+
+stdout | lib/trust/propagation.test.ts > Trust Propagation > propagateTrust > should handle multiple trust sources
+Starting trust propagation for 1 nodes
+Trust propagation converged after 2 iterations
+
+stdout | lib/trust/propagation.test.ts > Trust Propagation > propagateTrust > should respect max depth limit
+Starting trust propagation for 4 nodes
+Trust propagation converged after 2 iterations
+
+stdout | lib/trust/propagation.test.ts > Trust Propagation > propagateTrust > should converge within max iterations
+Starting trust propagation for 1 nodes
+Trust propagation converged after 2 iterations
+
+stdout | lib/trust/propagation.test.ts > Trust Propagation > propagateTrust > should handle cycles without infinite loops
+Starting trust propagation for 2 nodes
+Trust propagation converged after 2 iterations
+
+stdout | lib/trust/propagation.test.ts > Trust Propagation > propagateTrust > should respect custom damping factor
+Starting trust propagation for 1 nodes
+Trust propagation converged after 2 iterations
+Starting trust propagation for 1 nodes
+Trust propagation converged after 2 iterations
+
+stdout | functions/user-profile/index.test.ts > User Profile Lambda > GET /api/user/profile > should return existing user profile
+UserProfile event: {
+  "body": null,
+  "headers": {},
+  "multiValueHeaders": {},
+  "httpMethod": "GET",
+  "isBase64Encoded": false,
+  "path": "/",
+  "pathParameters": null,
+  "queryStringParameters": null,
+  "multiValueQueryStringParameters": null,
+  "stageVariables": null,
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "test-api-id",
+    "authorizer": {
+      "claims": {
+        "sub": "test-user-id",
+        "email": "test@example.com"
+      }
+    },
+    "protocol": "HTTP/1.1",
+    "httpMethod": "GET",
+    "identity": {
+      "accessKey": null,
+      "accountId": null,
+      "apiKey": null,
+      "apiKeyId": null,
+      "caller": null,
+      "clientCert": null,
+      "cognitoAuthenticationProvider": null,
+      "cognitoAuthenticationType": null,
+      "cognitoIdentityId": null,
+      "cognitoIdentityPoolId": null,
+      "principalOrgId": null,
+      "sourceIp": "127.0.0.1",
+      "user": null,
+      "userAgent": "test-agent",
+      "userArn": null
+    },
+    "path": "/",
+    "stage": "test",
+    "requestId": "test-request-id",
+    "requestTimeEpoch": 1763647662199,
+    "resourceId": "test-resource-id",
+    "resourcePath": "/"
+  },
+  "resource": "/"
+}
+
+stdout | functions/user-profile/index.test.ts > User Profile Lambda > GET /api/user/profile > should create profile on first login
+UserProfile event: {
+  "body": null,
+  "headers": {},
+  "multiValueHeaders": {},
+  "httpMethod": "GET",
+  "isBase64Encoded": false,
+  "path": "/",
+  "pathParameters": null,
+  "queryStringParameters": null,
+  "multiValueQueryStringParameters": null,
+  "stageVariables": null,
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "test-api-id",
+    "authorizer": {
+      "claims": {
+        "sub": "test-user-id",
+        "email": "test@example.com"
+      }
+    },
+    "protocol": "HTTP/1.1",
+    "httpMethod": "GET",
+    "identity": {
+      "accessKey": null,
+      "accountId": null,
+      "apiKey": null,
+      "apiKeyId": null,
+      "caller": null,
+      "clientCert": null,
+      "cognitoAuthenticationProvider": null,
+      "cognitoAuthenticationType": null,
+      "cognitoIdentityId": null,
+      "cognitoIdentityPoolId": null,
+      "principalOrgId": null,
+      "sourceIp": "127.0.0.1",
+      "user": null,
+      "userAgent": "test-agent",
+      "userArn": null
+    },
+    "path": "/",
+    "stage": "test",
+    "requestId": "test-request-id",
+    "requestTimeEpoch": 1763647662202,
+    "resourceId": "test-resource-id",
+    "resourcePath": "/"
+  },
+  "resource": "/"
+}
+Creating new user profile for test-user-id
+
+stdout | functions/user-profile/index.test.ts > User Profile Lambda > GET /api/user/profile > should return 401 if no auth
+UserProfile event: {
+  "body": null,
+  "headers": {},
+  "multiValueHeaders": {},
+  "httpMethod": "GET",
+  "isBase64Encoded": false,
+  "path": "/",
+  "pathParameters": null,
+  "queryStringParameters": null,
+  "multiValueQueryStringParameters": null,
+  "stageVariables": null,
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "test-api-id",
+    "protocol": "HTTP/1.1",
+    "httpMethod": "GET",
+    "identity": {
+      "accessKey": null,
+      "accountId": null,
+      "apiKey": null,
+      "apiKeyId": null,
+      "caller": null,
+      "clientCert": null,
+      "cognitoAuthenticationProvider": null,
+      "cognitoAuthenticationType": null,
+      "cognitoIdentityId": null,
+      "cognitoIdentityPoolId": null,
+      "principalOrgId": null,
+      "sourceIp": "127.0.0.1",
+      "user": null,
+      "userAgent": "test-agent",
+      "userArn": null
+    },
+    "path": "/",
+    "stage": "test",
+    "requestId": "test-request-id",
+    "requestTimeEpoch": 1763647662203,
+    "resourceId": "test-resource-id",
+    "resourcePath": "/"
+  },
+  "resource": "/"
+}
+
+stderr | functions/user-profile/index.test.ts > User Profile Lambda > GET /api/user/profile > should return 401 if no auth
+UserProfile error: UnauthorizedError: User not authenticated
+    at Module.getUserId (/home/user/nudge/backend/lib/utils/auth.ts:14:11)
+    at Module.handler (/home/user/nudge/backend/functions/user-profile/index.ts:21:20)
+    at /home/user/nudge/backend/functions/user-profile/index.test.ts:80:30
+    at file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:146:14
+    at file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:533:11
+    at runWithTimeout (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:39:7)
+    at runTest (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1056:17)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runSuite (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1205:15) {
+  statusCode: 401
+}
+
+stdout | functions/user-profile/index.test.ts > User Profile Lambda > PUT /api/user/profile > should update user profile successfully
+UserProfile event: {
+  "body": "{\"displayName\":\"New Name\",\"trustThreshold\":0.8,\"openMindedness\":0.3}",
+  "headers": {},
+  "multiValueHeaders": {},
+  "httpMethod": "PUT",
+  "isBase64Encoded": false,
+  "path": "/",
+  "pathParameters": null,
+  "queryStringParameters": null,
+  "multiValueQueryStringParameters": null,
+  "stageVariables": null,
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "test-api-id",
+    "authorizer": {
+      "claims": {
+        "sub": "test-user-id",
+        "email": "test@example.com"
+      }
+    },
+    "protocol": "HTTP/1.1",
+    "httpMethod": "GET",
+    "identity": {
+      "accessKey": null,
+      "accountId": null,
+      "apiKey": null,
+      "apiKeyId": null,
+      "caller": null,
+      "clientCert": null,
+      "cognitoAuthenticationProvider": null,
+      "cognitoAuthenticationType": null,
+      "cognitoIdentityId": null,
+      "cognitoIdentityPoolId": null,
+      "principalOrgId": null,
+      "sourceIp": "127.0.0.1",
+      "user": null,
+      "userAgent": "test-agent",
+      "userArn": null
+    },
+    "path": "/",
+    "stage": "test",
+    "requestId": "test-request-id",
+    "requestTimeEpoch": 1763647662211,
+    "resourceId": "test-resource-id",
+    "resourcePath": "/"
+  },
+  "resource": "/"
+}
+
+stdout | functions/user-profile/index.test.ts > User Profile Lambda > PUT /api/user/profile > should return 400 for invalid trust threshold
+UserProfile event: {
+  "body": "{\"trustThreshold\":1.5}",
+  "headers": {},
+  "multiValueHeaders": {},
+  "httpMethod": "PUT",
+  "isBase64Encoded": false,
+  "path": "/",
+  "pathParameters": null,
+  "queryStringParameters": null,
+  "multiValueQueryStringParameters": null,
+  "stageVariables": null,
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "test-api-id",
+    "authorizer": {
+      "claims": {
+        "sub": "test-user-id",
+        "email": "test@example.com"
+      }
+    },
+    "protocol": "HTTP/1.1",
+    "httpMethod": "GET",
+    "identity": {
+      "accessKey": null,
+      "accountId": null,
+      "apiKey": null,
+      "apiKeyId": null,
+      "caller": null,
+      "clientCert": null,
+      "cognitoAuthenticationProvider": null,
+      "cognitoAuthenticationType": null,
+      "cognitoIdentityId": null,
+      "cognitoIdentityPoolId": null,
+      "principalOrgId": null,
+      "sourceIp": "127.0.0.1",
+      "user": null,
+      "userAgent": "test-agent",
+      "userArn": null
+    },
+    "path": "/",
+    "stage": "test",
+    "requestId": "test-request-id",
+    "requestTimeEpoch": 1763647662221,
+    "resourceId": "test-resource-id",
+    "resourcePath": "/"
+  },
+  "resource": "/"
+}
+
+stdout | functions/user-profile/index.test.ts > User Profile Lambda > PUT /api/user/profile > should return 400 for invalid openMindedness
+UserProfile event: {
+  "body": "{\"openMindedness\":-0.1}",
+  "headers": {},
+  "multiValueHeaders": {},
+  "httpMethod": "PUT",
+  "isBase64Encoded": false,
+  "path": "/",
+  "pathParameters": null,
+  "queryStringParameters": null,
+  "multiValueQueryStringParameters": null,
+  "stageVariables": null,
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "test-api-id",
+    "authorizer": {
+      "claims": {
+        "sub": "test-user-id",
+        "email": "test@example.com"
+      }
+    },
+    "protocol": "HTTP/1.1",
+    "httpMethod": "GET",
+    "identity": {
+      "accessKey": null,
+      "accountId": null,
+      "apiKey": null,
+      "apiKeyId": null,
+      "caller": null,
+      "clientCert": null,
+      "cognitoAuthenticationProvider": null,
+      "cognitoAuthenticationType": null,
+      "cognitoIdentityId": null,
+      "cognitoIdentityPoolId": null,
+      "principalOrgId": null,
+      "sourceIp": "127.0.0.1",
+      "user": null,
+      "userAgent": "test-agent",
+      "userArn": null
+    },
+    "path": "/",
+    "stage": "test",
+    "requestId": "test-request-id",
+    "requestTimeEpoch": 1763647662224,
+    "resourceId": "test-resource-id",
+    "resourcePath": "/"
+  },
+  "resource": "/"
+}
+
+stdout | functions/user-profile/index.test.ts > User Profile Lambda > PUT /api/user/profile > should handle missing body gracefully
+UserProfile event: {
+  "body": null,
+  "headers": {},
+  "multiValueHeaders": {},
+  "httpMethod": "PUT",
+  "isBase64Encoded": false,
+  "path": "/",
+  "pathParameters": null,
+  "queryStringParameters": null,
+  "multiValueQueryStringParameters": null,
+  "stageVariables": null,
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "test-api-id",
+    "authorizer": {
+      "claims": {
+        "sub": "test-user-id",
+        "email": "test@example.com"
+      }
+    },
+    "protocol": "HTTP/1.1",
+    "httpMethod": "GET",
+    "identity": {
+      "accessKey": null,
+      "accountId": null,
+      "apiKey": null,
+      "apiKeyId": null,
+      "caller": null,
+      "clientCert": null,
+      "cognitoAuthenticationProvider": null,
+      "cognitoAuthenticationType": null,
+      "cognitoIdentityId": null,
+      "cognitoIdentityPoolId": null,
+      "principalOrgId": null,
+      "sourceIp": "127.0.0.1",
+      "user": null,
+      "userAgent": "test-agent",
+      "userArn": null
+    },
+    "path": "/",
+    "stage": "test",
+    "requestId": "test-request-id",
+    "requestTimeEpoch": 1763647662225,
+    "resourceId": "test-resource-id",
+    "resourcePath": "/"
+  },
+  "resource": "/"
+}
+
+stderr | functions/user-profile/index.test.ts > User Profile Lambda > PUT /api/user/profile > should handle missing body gracefully
+UserProfile error: Error: Request body is required
+    at Module.parseBody (/home/user/nudge/backend/lib/utils/auth.ts:47:11)
+    at handleUpdateProfile (/home/user/nudge/backend/functions/user-profile/index.ts:70:16)
+    at Module.handler (/home/user/nudge/backend/functions/user-profile/index.ts:27:20)
+    at /home/user/nudge/backend/functions/user-profile/index.test.ts:152:30
+    at file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:146:14
+    at file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:533:11
+    at runWithTimeout (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:39:7)
+    at runTest (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1056:17)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runSuite (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1205:15)
+Unexpected error: Error: Request body is required
+    at Module.parseBody (/home/user/nudge/backend/lib/utils/auth.ts:47:11)
+    at handleUpdateProfile (/home/user/nudge/backend/functions/user-profile/index.ts:70:16)
+    at Module.handler (/home/user/nudge/backend/functions/user-profile/index.ts:27:20)
+    at /home/user/nudge/backend/functions/user-profile/index.test.ts:152:30
+    at file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:146:14
+    at file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:533:11
+    at runWithTimeout (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:39:7)
+    at runTest (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1056:17)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runSuite (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1205:15)
+
+stdout | functions/user-profile/index.test.ts > User Profile Lambda > Error handling > should return 500 on database error
+UserProfile event: {
+  "body": null,
+  "headers": {},
+  "multiValueHeaders": {},
+  "httpMethod": "GET",
+  "isBase64Encoded": false,
+  "path": "/",
+  "pathParameters": null,
+  "queryStringParameters": null,
+  "multiValueQueryStringParameters": null,
+  "stageVariables": null,
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "test-api-id",
+    "authorizer": {
+      "claims": {
+        "sub": "test-user-id",
+        "email": "test@example.com"
+      }
+    },
+    "protocol": "HTTP/1.1",
+    "httpMethod": "GET",
+    "identity": {
+      "accessKey": null,
+      "accountId": null,
+      "apiKey": null,
+      "apiKeyId": null,
+      "caller": null,
+      "clientCert": null,
+      "cognitoAuthenticationProvider": null,
+      "cognitoAuthenticationType": null,
+      "cognitoIdentityId": null,
+      "cognitoIdentityPoolId": null,
+      "principalOrgId": null,
+      "sourceIp": "127.0.0.1",
+      "user": null,
+      "userAgent": "test-agent",
+      "userArn": null
+    },
+    "path": "/",
+    "stage": "test",
+    "requestId": "test-request-id",
+    "requestTimeEpoch": 1763647662227,
+    "resourceId": "test-resource-id",
+    "resourcePath": "/"
+  },
+  "resource": "/"
+}
+
+stderr | functions/user-profile/index.test.ts > User Profile Lambda > Error handling > should return 500 on database error
+UserProfile error: Error: Database connection failed
+    at /home/user/nudge/backend/functions/user-profile/index.test.ts:160:47
+    at file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:146:14
+    at file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:533:11
+    at runWithTimeout (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:39:7)
+    at runTest (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1056:17)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runSuite (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runFiles (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1262:5)
+Unexpected error: Error: Database connection failed
+    at /home/user/nudge/backend/functions/user-profile/index.test.ts:160:47
+    at file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:146:14
+    at file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:533:11
+    at runWithTimeout (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:39:7)
+    at runTest (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1056:17)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runSuite (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runFiles (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1262:5)
+
+stdout | functions/user-profile/index.test.ts > User Profile Lambda > Error handling > should return 405 for unsupported methods
+UserProfile event: {
+  "body": null,
+  "headers": {},
+  "multiValueHeaders": {},
+  "httpMethod": "DELETE",
+  "isBase64Encoded": false,
+  "path": "/",
+  "pathParameters": null,
+  "queryStringParameters": null,
+  "multiValueQueryStringParameters": null,
+  "stageVariables": null,
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "test-api-id",
+    "authorizer": {
+      "claims": {
+        "sub": "test-user-id",
+        "email": "test@example.com"
+      }
+    },
+    "protocol": "HTTP/1.1",
+    "httpMethod": "GET",
+    "identity": {
+      "accessKey": null,
+      "accountId": null,
+      "apiKey": null,
+      "apiKeyId": null,
+      "caller": null,
+      "clientCert": null,
+      "cognitoAuthenticationProvider": null,
+      "cognitoAuthenticationType": null,
+      "cognitoIdentityId": null,
+      "cognitoIdentityPoolId": null,
+      "principalOrgId": null,
+      "sourceIp": "127.0.0.1",
+      "user": null,
+      "userAgent": "test-agent",
+      "userArn": null
+    },
+    "path": "/",
+    "stage": "test",
+    "requestId": "test-request-id",
+    "requestTimeEpoch": 1763647662228,
+    "resourceId": "test-resource-id",
+    "resourcePath": "/"
+  },
+  "resource": "/"
+}
+
+stderr | functions/user-profile/index.test.ts > User Profile Lambda > Error handling > should return 405 for unsupported methods
+Unexpected error: Error: Method not allowed
+    at Module.handler (/home/user/nudge/backend/functions/user-profile/index.ts:30:26)
+    at /home/user/nudge/backend/functions/user-profile/index.test.ts:170:30
+    at file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:146:14
+    at file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:533:11
+    at runWithTimeout (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:39:7)
+    at runTest (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1056:17)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runSuite (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1205:15)
+    at runSuite (file:///home/user/nudge/node_modules/@vitest/runner/dist/index.js:1205:15)
+
+stdout | functions/user-profile/index.test.ts > User Profile Lambda > CORS headers > should include CORS headers in all responses
+UserProfile event: {
+  "body": null,
+  "headers": {},
+  "multiValueHeaders": {},
+  "httpMethod": "GET",
+  "isBase64Encoded": false,
+  "path": "/",
+  "pathParameters": null,
+  "queryStringParameters": null,
+  "multiValueQueryStringParameters": null,
+  "stageVariables": null,
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "test-api-id",
+    "authorizer": {
+      "claims": {
+        "sub": "test-user-id",
+        "email": "test@example.com"
+      }
+    },
+    "protocol": "HTTP/1.1",
+    "httpMethod": "GET",
+    "identity": {
+      "accessKey": null,
+      "accountId": null,
+      "apiKey": null,
+      "apiKeyId": null,
+      "caller": null,
+      "clientCert": null,
+      "cognitoAuthenticationProvider": null,
+      "cognitoAuthenticationType": null,
+      "cognitoIdentityId": null,
+      "cognitoIdentityPoolId": null,
+      "principalOrgId": null,
+      "sourceIp": "127.0.0.1",
+      "user": null,
+      "userAgent": "test-agent",
+      "userArn": null
+    },
+    "path": "/",
+    "stage": "test",
+    "requestId": "test-request-id",
+    "requestTimeEpoch": 1763647662230,
+    "resourceId": "test-resource-id",
+    "resourcePath": "/"
+  },
+  "resource": "/"
+}
+
+ ❯ lib/trust/propagation.test.ts (20 tests | 13 failed) 33ms
+   × Trust Propagation > propagateTrust > should propagate trust through single hop 12ms
+     → expected 0.85 to be close to 0.56, received difference is 0.2899999999999999, but expected 0.05
+   × Trust Propagation > propagateTrust > should respect max depth limit 1ms
+     → expected 0.6715 to be less than 0.3
+   × Trust Propagation > computeUserTrustForTarget > should compute trust for direct connection 1ms
+     → expected 0.71 to be close to 0.8, received difference is 0.09000000000000008, but expected 0.05
+   × Trust Propagation > computeUserTrustForTarget > should compute trust through intermediaries 1ms
+     → expected 0.654 to be less than 0.6
+   × Trust Propagation > computeUserTrustForTarget > should return 0 for no connection 3ms
+     → expected 0.5 to be +0 // Object.is equality
+   × Trust Propagation > computeUserTrustForTarget > should respect max depth 1ms
+     → expected 0.5 to be +0 // Object.is equality
+   × Trust Propagation > findTrustPaths > should find direct path 0ms
+     → findTrustPaths is not a function
+   × Trust Propagation > findTrustPaths > should find multiple paths 0ms
+     → findTrustPaths is not a function
+   × Trust Propagation > findTrustPaths > should return empty array for no path 0ms
+     → findTrustPaths is not a function
+   × Trust Propagation > findTrustPaths > should respect depth limit 0ms
+     → findTrustPaths is not a function
+   × Trust Propagation > identifyTrustSources > should identify direct trust source 4ms
+     → expected [] to have a length of 1 but got +0
+   × Trust Propagation > identifyTrustSources > should identify intermediate trust sources 0ms
+     → expected 0 to be greater than 0
+   × Trust Propagation > identifyTrustSources > should handle multiple contributing sources 0ms
+     → expected 0 to be greater than or equal to 2
+ ❯ functions/user-profile/index.test.ts (10 tests | 5 failed) 35ms
+   × User Profile Lambda > PUT /api/user/profile > should update user profile successfully 10ms
+     → expected "spy" to be called with arguments: [ 'test-user-id', …(1) ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
+    "test-user-id",
+    Object {
+      "displayName": "New Name",
+-     "openMindedness": 0.3,
+-     "trustThreshold": 0.8,
+    },
+  ]
+
+
+Number of calls: 1
+
+   × User Profile Lambda > PUT /api/user/profile > should return 400 for invalid trust threshold 3ms
+     → expected 200 to be 400 // Object.is equality
+   × User Profile Lambda > PUT /api/user/profile > should return 400 for invalid openMindedness 1ms
+     → expected 200 to be 400 // Object.is equality
+   × User Profile Lambda > PUT /api/user/profile > should handle missing body gracefully 2ms
+     → expected 500 to be 400 // Object.is equality
+   × User Profile Lambda > Error handling > should return 405 for unsupported methods 1ms
+     → expected 500 to be 405 // Object.is equality
+stdout | lib/trust/engine.test.ts > Trust Engine > computeUserTrustNetwork > should compute trust network from user relationships
+Computing trust network for user user1
+
+stdout | lib/trust/engine.test.ts > Trust Engine > computeUserTrustNetwork > should store propagated trust values
+Computing trust network for user user1
+
+ ❯ lib/trust/engine.test.ts (12 tests | 12 failed) 30ms
+   × Trust Engine > computeUserTrustNetwork > should compute trust network from user relationships 10ms
+     → Cannot read properties of undefined (reading 'length')
+   × Trust Engine > computeUserTrustNetwork > should store propagated trust values 1ms
+     → Cannot read properties of undefined (reading 'length')
+   × Trust Engine > getUserTrustForAssertion > should return 0.5 default when no trust value computed 4ms
+     → [vitest] No "getTrustValue" export is defined on the "../db/trust" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+   × Trust Engine > getUserTrustForAssertions > should return trust values for multiple assertions 4ms
+     → expected +0 to be 3 // Object.is equality
+   × Trust Engine > getUserTrustForAssertions > should handle empty array 2ms
+     → expected Map{ 'a1' => 0.9, 'a2' => 0.5, …(1) } to deeply equal {}
+   × Trust Engine > filterAssertionsByTrust > should filter assertions above threshold 1ms
+     → [vitest] No "getTrustValues" export is defined on the "../db/trust" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+   × Trust Engine > filterAssertionsByTrust > should return all when threshold is 0 1ms
+     → [vitest] No "getTrustValues" export is defined on the "../db/trust" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+   × Trust Engine > filterAssertionsByTrust > should use default 0.5 for missing trust values 1ms
+     → [vitest] No "getTrustValues" export is defined on the "../db/trust" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+   × Trust Engine > sortAssertionsByTrust > should sort assertions by trust value descending 1ms
+     → [vitest] No "getTrustValues" export is defined on the "../db/trust" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+   × Trust Engine > sortAssertionsByTrust > should handle missing trust values with default 0.5 1ms
+     → [vitest] No "getTrustValues" export is defined on the "../db/trust" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+   × Trust Engine > getTrustExplanation > should return explanation for trust value 1ms
+     → [vitest] No "getTrustValue" export is defined on the "../db/trust" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+   × Trust Engine > getTrustExplanation > should include trust paths in explanation 0ms
+     → [vitest] No "getTrustValue" export is defined on the "../db/trust" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+ ❯ lib/llm/integration.test.ts (10 tests | 7 failed) 25557ms
+   × Claude API Integration Tests > Article Decomposition: Wikipedia > should extract factual assertions from Wikipedia article 6220ms
+     → expected { …(4) } to have property "topics"
+   ✓ Claude API Integration Tests > Article Decomposition: Wikipedia > should extract assertions with proper confidence scores 3353ms
+   ✓ Claude API Integration Tests > Article Decomposition: News > should extract assertions from news article 6354ms
+   ✓ Claude API Integration Tests > Article Decomposition: News > should identify attributions in news content 4670ms
+   × Claude API Integration Tests > Article Reassembly with Trust Filtering > should generate coherent article from trusted assertions 4ms
+     → trustValues.get is not a function
+   × Claude API Integration Tests > Article Reassembly with Trust Filtering > should filter out low-trust assertions when generating article 1ms
+     → trustValues.get is not a function
+   × Claude API Integration Tests > Article Reassembly with Trust Filtering > should show trust influence by comparing high vs low trust articles 1ms
+     → trustValues.get is not a function
+   × Claude API Integration Tests > Chat Q&A with Trust Context > should answer questions using trusted assertions 2ms
+     → trustValues.get is not a function
+   × Claude API Integration Tests > Chat Q&A with Trust Context > should cite sources when answering 1ms
+     → trustValues.get is not a function
+   × Claude API Integration Tests > End-to-End: Decompose and Reassemble > should decompose article, then reassemble it coherently 4949ms
+     → trustValues.get is not a function
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 37 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  functions/user-profile/index.test.ts > User Profile Lambda > PUT /api/user/profile > should update user profile successfully
+AssertionError: expected "spy" to be called with arguments: [ 'test-user-id', …(1) ]
+
+Received: 
+
+  1st spy call:
+
+  Array [
+    "test-user-id",
+    Object {
+      "displayName": "New Name",
+-     "openMindedness": 0.3,
+-     "trustThreshold": 0.8,
+    },
+  ]
+
+
+Number of calls: 1
+
+ ❯ functions/user-profile/index.test.ts:113:33
+    111|       expect(response.statusCode).toBe(200);
+    112|       expect(JSON.parse(response.body)).toEqual(updatedProfile);
+    113|       expect(updateUserProfile).toHaveBeenCalledWith('test-user-id', u…
+       |                                 ^
+    114|     });
+    115| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/37]⎯
+
+ FAIL  functions/user-profile/index.test.ts > User Profile Lambda > PUT /api/user/profile > should return 400 for invalid trust threshold
+AssertionError: expected 200 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 200
+
+ ❯ functions/user-profile/index.test.ts:128:35
+    126|       const response = await handler(event);
+    127| 
+    128|       expect(response.statusCode).toBe(400);
+       |                                   ^
+    129|     });
+    130| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/37]⎯
+
+ FAIL  functions/user-profile/index.test.ts > User Profile Lambda > PUT /api/user/profile > should return 400 for invalid openMindedness
+AssertionError: expected 200 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 200
+
+ ❯ functions/user-profile/index.test.ts:143:35
+    141|       const response = await handler(event);
+    142| 
+    143|       expect(response.statusCode).toBe(400);
+       |                                   ^
+    144|     });
+    145| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/37]⎯
+
+ FAIL  functions/user-profile/index.test.ts > User Profile Lambda > PUT /api/user/profile > should handle missing body gracefully
+AssertionError: expected 500 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 500
+
+ ❯ functions/user-profile/index.test.ts:154:35
+    152|       const response = await handler(event);
+    153| 
+    154|       expect(response.statusCode).toBe(400);
+       |                                   ^
+    155|     });
+    156|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/37]⎯
+
+ FAIL  functions/user-profile/index.test.ts > User Profile Lambda > Error handling > should return 405 for unsupported methods
+AssertionError: expected 500 to be 405 // Object.is equality
+
+- Expected
++ Received
+
+- 405
++ 500
+
+ ❯ functions/user-profile/index.test.ts:172:35
+    170|       const response = await handler(event);
+    171| 
+    172|       expect(response.statusCode).toBe(405);
+       |                                   ^
+    173|     });
+    174|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/37]⎯
+
+ FAIL  lib/llm/integration.test.ts > Claude API Integration Tests > Article Decomposition: Wikipedia > should extract factual assertions from Wikipedia article
+AssertionError: expected { …(4) } to have property "topics"
+ ❯ lib/llm/integration.test.ts:51:27
+     49|         expect(assertion).toHaveProperty('type');
+     50|         expect(assertion).toHaveProperty('confidence');
+     51|         expect(assertion).toHaveProperty('topics');
+       |                           ^
+     52| 
+     53|         // Content should be non-empty
+ ❯ lib/llm/integration.test.ts:47:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/37]⎯
+
+ FAIL  lib/llm/integration.test.ts > Claude API Integration Tests > Article Reassembly with Trust Filtering > should generate coherent article from trusted assertions
+TypeError: trustValues.get is not a function
+ ❯ Module.generateWikiArticle lib/llm/generation.ts:41:31
+     39| 
+     40|   for (const assertion of assertions) {
+     41|     const trust = trustValues.get(assertion.assertionId) ?? 0.5;
+       |                               ^
+     42|     const item = {
+     43|       content: typeof assertion.content === 'string' ? assertion.conte…
+ ❯ lib/llm/integration.test.ts:202:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/37]⎯
+
+ FAIL  lib/llm/integration.test.ts > Claude API Integration Tests > Article Reassembly with Trust Filtering > should filter out low-trust assertions when generating article
+TypeError: trustValues.get is not a function
+ ❯ Module.generateWikiArticle lib/llm/generation.ts:41:31
+     39| 
+     40|   for (const assertion of assertions) {
+     41|     const trust = trustValues.get(assertion.assertionId) ?? 0.5;
+       |                               ^
+     42|     const item = {
+     43|       content: typeof assertion.content === 'string' ? assertion.conte…
+ ❯ lib/llm/integration.test.ts:258:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/37]⎯
+
+ FAIL  lib/llm/integration.test.ts > Claude API Integration Tests > Article Reassembly with Trust Filtering > should show trust influence by comparing high vs low trust articles
+TypeError: trustValues.get is not a function
+ ❯ Module.generateWikiArticle lib/llm/generation.ts:41:31
+     39| 
+     40|   for (const assertion of assertions) {
+     41|     const trust = trustValues.get(assertion.assertionId) ?? 0.5;
+       |                               ^
+     42|     const item = {
+     43|       content: typeof assertion.content === 'string' ? assertion.conte…
+ ❯ lib/llm/integration.test.ts:295:38
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/37]⎯
+
+ FAIL  lib/llm/integration.test.ts > Claude API Integration Tests > Chat Q&A with Trust Context > should answer questions using trusted assertions
+TypeError: trustValues.get is not a function
+ ❯ lib/llm/generation.ts:93:32
+     91|   // Sort by trust value (descending)
+     92|   const sortedAssertions = relevantAssertions.sort((a, b) => {
+     93|     const trustA = trustValues.get(a.assertionId) ?? 0.5;
+       |                                ^
+     94|     const trustB = trustValues.get(b.assertionId) ?? 0.5;
+     95|     return trustB - trustA;
+ ❯ Module.generateChatResponse lib/llm/generation.ts:92:47
+ ❯ lib/llm/integration.test.ts:349:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/37]⎯
+
+ FAIL  lib/llm/integration.test.ts > Claude API Integration Tests > Chat Q&A with Trust Context > should cite sources when answering
+TypeError: trustValues.get is not a function
+ ❯ lib/llm/generation.ts:105:24
+    103|     content: typeof a.content === 'string' ? a.content : JSON.stringif…
+    104|     source: a.sourceId,
+    105|     trust: trustValues.get(a.assertionId) ?? 0.5,
+       |                        ^
+    106|   }));
+    107| 
+ ❯ Module.generateChatResponse lib/llm/generation.ts:102:45
+ ❯ lib/llm/integration.test.ts:380:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/37]⎯
+
+ FAIL  lib/llm/integration.test.ts > Claude API Integration Tests > End-to-End: Decompose and Reassemble > should decompose article, then reassemble it coherently
+TypeError: trustValues.get is not a function
+ ❯ Module.generateWikiArticle lib/llm/generation.ts:41:31
+     39| 
+     40|   for (const assertion of assertions) {
+     41|     const trust = trustValues.get(assertion.assertionId) ?? 0.5;
+       |                               ^
+     42|     const item = {
+     43|       content: typeof assertion.content === 'string' ? assertion.conte…
+ ❯ lib/llm/integration.test.ts:437:33
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/37]⎯
+
+ FAIL  lib/trust/engine.test.ts > Trust Engine > computeUserTrustNetwork > should compute trust network from user relationships
+TypeError: Cannot read properties of undefined (reading 'length')
+ ❯ Proxy.computeUserTrustNetwork lib/trust/engine.ts:30:44
+     28|   // 1. Load user's trust relationships
+     29|   const { trustRelationships } = await listUserTrust(userId, 1000);
+     30|   console.log(`Loaded ${trustRelationships.length} trust relationships…
+       |                                            ^
+     31| 
+     32|   // 2. Load all assertions (for now, limit to recent ones)
+ ❯ lib/trust/engine.test.ts:58:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/37]⎯
+
+ FAIL  lib/trust/engine.test.ts > Trust Engine > computeUserTrustNetwork > should store propagated trust values
+TypeError: Cannot read properties of undefined (reading 'length')
+ ❯ Proxy.computeUserTrustNetwork lib/trust/engine.ts:30:44
+     28|   // 1. Load user's trust relationships
+     29|   const { trustRelationships } = await listUserTrust(userId, 1000);
+     30|   console.log(`Loaded ${trustRelationships.length} trust relationships…
+       |                                            ^
+     31| 
+     32|   // 2. Load all assertions (for now, limit to recent ones)
+ ❯ lib/trust/engine.test.ts:71:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/37]⎯
+
+ FAIL  lib/trust/engine.test.ts > Trust Engine > getUserTrustForAssertion > should return 0.5 default when no trust value computed
+Error: [vitest] No "getTrustValue" export is defined on the "../db/trust" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+vi.mock(import("../db/trust"), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ Proxy.getUserTrustForAssertion lib/trust/engine.ts:111:29
+    109| ): Promise<number> {
+    110|   // Check if we have a cached value
+    111|   const cachedTrust = await getTrustValue(userId, assertionId);
+       |                             ^
+    112| 
+    113|   if (cachedTrust) {
+ ❯ lib/trust/engine.test.ts:79:27
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/37]⎯
+
+ FAIL  lib/trust/engine.test.ts > Trust Engine > getUserTrustForAssertions > should return trust values for multiple assertions
+AssertionError: expected +0 to be 3 // Object.is equality
+
+- Expected
++ Received
+
+- 3
++ 0
+
+ ❯ lib/trust/engine.test.ts:90:47
+     88| 
+     89|       expect(trustValues).toBeDefined();
+     90|       expect(Object.keys(trustValues).length).toBe(3);
+       |                                               ^
+     91|       expect(trustValues['a1']).toBeDefined();
+     92|       expect(trustValues['a2']).toBeDefined();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/37]⎯
+
+ FAIL  lib/trust/engine.test.ts > Trust Engine > getUserTrustForAssertions > should handle empty array
+AssertionError: expected Map{ 'a1' => 0.9, 'a2' => 0.5, …(1) } to deeply equal {}
+
+- Expected: 
+Object {}
+
++ Received: 
+Map {
+  "a1" => 0.9,
+  "a2" => 0.5,
+  "a3" => 0.3,
+}
+
+ ❯ lib/trust/engine.test.ts:98:27
+     96|     it('should handle empty array', async () => {
+     97|       const trustValues = await getUserTrustForAssertions('user1', []);
+     98|       expect(trustValues).toEqual({});
+       |                           ^
+     99|     });
+    100|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/37]⎯
+
+ FAIL  lib/trust/engine.test.ts > Trust Engine > filterAssertionsByTrust > should filter assertions above threshold
+Error: [vitest] No "getTrustValues" export is defined on the "../db/trust" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+vi.mock(import("../db/trust"), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ getUserTrustForAssertions lib/trust/engine.ts:134:11
+    132| 
+    133|   // Load from database
+    134|   const { getTrustValues } = await import('../db/trust');
+       |           ^
+    135|   const cachedValues = await getTrustValues(userId, assertionIds);
+    136| 
+ ❯ Proxy.filterAssertionsByTrust lib/trust/engine.ts:157:23
+ ❯ lib/trust/engine.test.ts:125:24
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/37]⎯
+
+ FAIL  lib/trust/engine.test.ts > Trust Engine > filterAssertionsByTrust > should return all when threshold is 0
+Error: [vitest] No "getTrustValues" export is defined on the "../db/trust" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+vi.mock(import("../db/trust"), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ getUserTrustForAssertions lib/trust/engine.ts:134:11
+    132| 
+    133|   // Load from database
+    134|   const { getTrustValues } = await import('../db/trust');
+       |           ^
+    135|   const cachedValues = await getTrustValues(userId, assertionIds);
+    136| 
+ ❯ Proxy.filterAssertionsByTrust lib/trust/engine.ts:157:23
+ ❯ lib/trust/engine.test.ts:137:24
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/37]⎯
+
+ FAIL  lib/trust/engine.test.ts > Trust Engine > filterAssertionsByTrust > should use default 0.5 for missing trust values
+Error: [vitest] No "getTrustValues" export is defined on the "../db/trust" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+vi.mock(import("../db/trust"), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ getUserTrustForAssertions lib/trust/engine.ts:134:11
+    132| 
+    133|   // Load from database
+    134|   const { getTrustValues } = await import('../db/trust');
+       |           ^
+    135|   const cachedValues = await getTrustValues(userId, assertionIds);
+    136| 
+ ❯ Proxy.filterAssertionsByTrust lib/trust/engine.ts:157:23
+ ❯ lib/trust/engine.test.ts:145:24
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/37]⎯
+
+ FAIL  lib/trust/engine.test.ts > Trust Engine > sortAssertionsByTrust > should sort assertions by trust value descending
+Error: [vitest] No "getTrustValues" export is defined on the "../db/trust" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+vi.mock(import("../db/trust"), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ getUserTrustForAssertions lib/trust/engine.ts:134:11
+    132| 
+    133|   // Load from database
+    134|   const { getTrustValues } = await import('../db/trust');
+       |           ^
+    135|   const cachedValues = await getTrustValues(userId, assertionIds);
+    136| 
+ ❯ Proxy.sortAssertionsByTrust lib/trust/engine.ts:173:23
+ ❯ lib/trust/engine.test.ts:159:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/37]⎯
+
+ FAIL  lib/trust/engine.test.ts > Trust Engine > sortAssertionsByTrust > should handle missing trust values with default 0.5
+Error: [vitest] No "getTrustValues" export is defined on the "../db/trust" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+vi.mock(import("../db/trust"), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ getUserTrustForAssertions lib/trust/engine.ts:134:11
+    132| 
+    133|   // Load from database
+    134|   const { getTrustValues } = await import('../db/trust');
+       |           ^
+    135|   const cachedValues = await getTrustValues(userId, assertionIds);
+    136| 
+ ❯ Proxy.sortAssertionsByTrust lib/trust/engine.ts:173:23
+ ❯ lib/trust/engine.test.ts:174:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/37]⎯
+
+ FAIL  lib/trust/engine.test.ts > Trust Engine > getTrustExplanation > should return explanation for trust value
+Error: [vitest] No "getTrustValue" export is defined on the "../db/trust" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+vi.mock(import("../db/trust"), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ Proxy.getTrustExplanation lib/trust/engine.ts:196:29
+    194| }> {
+    195|   // Get cached trust
+    196|   const cachedTrust = await getTrustValue(userId, assertionId);
+       |                             ^
+    197| 
+    198|   if (cachedTrust) {
+ ❯ lib/trust/engine.test.ts:184:33
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/37]⎯
+
+ FAIL  lib/trust/engine.test.ts > Trust Engine > getTrustExplanation > should include trust paths in explanation
+Error: [vitest] No "getTrustValue" export is defined on the "../db/trust" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+vi.mock(import("../db/trust"), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ Proxy.getTrustExplanation lib/trust/engine.ts:196:29
+    194| }> {
+    195|   // Get cached trust
+    196|   const cachedTrust = await getTrustValue(userId, assertionId);
+       |                             ^
+    197| 
+    198|   if (cachedTrust) {
+ ❯ lib/trust/engine.test.ts:193:33
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/37]⎯
+
+ FAIL  lib/trust/propagation.test.ts > Trust Propagation > propagateTrust > should propagate trust through single hop
+AssertionError: expected 0.85 to be close to 0.56, received difference is 0.2899999999999999, but expected 0.05
+ ❯ lib/trust/propagation.test.ts:25:44
+     23|       expect(result.converged).toBe(true);
+     24|       // user2 should get 0.8 * 0.7 (damping) = 0.56
+     25|       expect(graph.getTrustValue('user2')).toBeCloseTo(0.56, 1);
+       |                                            ^
+     26|     });
+     27| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/37]⎯
+
+ FAIL  lib/trust/propagation.test.ts > Trust Propagation > propagateTrust > should respect max depth limit
+AssertionError: expected 0.6715 to be less than 0.3
+ ❯ lib/trust/propagation.test.ts:81:44
+     79|       expect(graph.getTrustValue('user2')).toBeGreaterThan(0.5);
+     80|       expect(graph.getTrustValue('user3')).toBeGreaterThan(0.3);
+     81|       expect(graph.getTrustValue('user4')).toBeLessThan(0.3);
+       |                                            ^
+     82|     });
+     83| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/37]⎯
+
+ FAIL  lib/trust/propagation.test.ts > Trust Propagation > computeUserTrustForTarget > should compute trust for direct connection
+AssertionError: expected 0.71 to be close to 0.8, received difference is 0.09000000000000008, but expected 0.05
+ ❯ lib/trust/propagation.test.ts:148:21
+    146| 
+    147|       const trust = computeUserTrustForTarget(graph, 'user1', 'user2');
+    148|       expect(trust).toBeCloseTo(0.8, 1);
+       |                     ^
+    149|     });
+    150| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/37]⎯
+
+ FAIL  lib/trust/propagation.test.ts > Trust Propagation > computeUserTrustForTarget > should compute trust through intermediaries
+AssertionError: expected 0.654 to be less than 0.6
+ ❯ lib/trust/propagation.test.ts:163:21
+    161|       // Trust should be 0.9 * 0.8 * 0.7 (damping) ≈ 0.50
+    162|       expect(trust).toBeGreaterThan(0.4);
+    163|       expect(trust).toBeLessThan(0.6);
+       |                     ^
+    164|     });
+    165| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/37]⎯
+
+ FAIL  lib/trust/propagation.test.ts > Trust Propagation > computeUserTrustForTarget > should return 0 for no connection
+AssertionError: expected 0.5 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 0.5
+
+ ❯ lib/trust/propagation.test.ts:172:21
+    170| 
+    171|       const trust = computeUserTrustForTarget(graph, 'user1', 'user2');
+    172|       expect(trust).toBe(0);
+       |                     ^
+    173|     });
+    174| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/37]⎯
+
+ FAIL  lib/trust/propagation.test.ts > Trust Propagation > computeUserTrustForTarget > should respect max depth
+AssertionError: expected 0.5 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 0.5
+
+ ❯ lib/trust/propagation.test.ts:187:22
+    185| 
+    186|       // With depth 2, should have no path to user5
+    187|       expect(trust1).toBe(0);
+       |                      ^
+    188|       // With depth 5, should have a path
+    189|       expect(trust2).toBeGreaterThan(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/37]⎯
+
+ FAIL  lib/trust/propagation.test.ts > Trust Propagation > findTrustPaths > should find direct path
+TypeError: findTrustPaths is not a function
+ ❯ lib/trust/propagation.test.ts:200:21
+    198|       graph.addEdge('user1', 'user2', 0.8, 'trust');
+    199| 
+    200|       const paths = findTrustPaths(graph, 'user1', 'user2', 3);
+       |                     ^
+    201| 
+    202|       expect(paths).toHaveLength(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/37]⎯
+
+ FAIL  lib/trust/propagation.test.ts > Trust Propagation > findTrustPaths > should find multiple paths
+TypeError: findTrustPaths is not a function
+ ❯ lib/trust/propagation.test.ts:220:21
+    218|       graph.addEdge('user3', 'target', 0.9, 'trust');
+    219| 
+    220|       const paths = findTrustPaths(graph, 'user1', 'target', 3);
+       |                     ^
+    221| 
+    222|       expect(paths.length).toBeGreaterThanOrEqual(2);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/37]⎯
+
+ FAIL  lib/trust/propagation.test.ts > Trust Propagation > findTrustPaths > should return empty array for no path
+TypeError: findTrustPaths is not a function
+ ❯ lib/trust/propagation.test.ts:230:21
+    228|       graph.addNode('user2', 'user'); // No direct trust
+    229| 
+    230|       const paths = findTrustPaths(graph, 'user1', 'user2', 3);
+       |                     ^
+    231| 
+    232|       expect(paths).toHaveLength(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/37]⎯
+
+ FAIL  lib/trust/propagation.test.ts > Trust Propagation > findTrustPaths > should respect depth limit
+TypeError: findTrustPaths is not a function
+ ❯ lib/trust/propagation.test.ts:243:22
+    241|       }
+    242| 
+    243|       const paths1 = findTrustPaths(graph, 'user1', 'user5', 2);
+       |                      ^
+    244|       const paths2 = findTrustPaths(graph, 'user1', 'user5', 5);
+    245| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/37]⎯
+
+ FAIL  lib/trust/propagation.test.ts > Trust Propagation > identifyTrustSources > should identify direct trust source
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ lib/trust/propagation.test.ts:260:23
+    258|       const sources = identifyTrustSources(graph, 'user1', 'user2', 3);
+    259| 
+    260|       expect(sources).toHaveLength(1);
+       |                       ^
+    261|       expect(sources[0].sourceId).toBe('user1');
+    262|       expect(sources[0].contribution).toBeCloseTo(0.8, 1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/37]⎯
+
+ FAIL  lib/trust/propagation.test.ts > Trust Propagation > identifyTrustSources > should identify intermediate trust sources
+AssertionError: expected 0 to be greater than 0
+ ❯ lib/trust/propagation.test.ts:277:30
+    275| 
+    276|       // Should identify user2 as intermediate
+    277|       expect(sources.length).toBeGreaterThan(0);
+       |                              ^
+    278|       expect(sources.some((s) => s.sourceId === 'user2')).toBe(true);
+    279|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/37]⎯
+
+ FAIL  lib/trust/propagation.test.ts > Trust Propagation > identifyTrustSources > should handle multiple contributing sources
+AssertionError: expected 0 to be greater than or equal to 2
+ ❯ lib/trust/propagation.test.ts:296:30
+    294| 
+    295|       // Should identify both user2 and user3 as contributors
+    296|       expect(sources.length).toBeGreaterThanOrEqual(2);
+       |                              ^
+    297|     });
+    298| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/37]⎯
+
+ Test Files  4 failed | 4 passed (8)
+      Tests  37 failed | 67 passed (104)
+   Start at  14:07:41
+   Duration  26.74s (transform 865ms, setup 363ms, collect 1.84s, tests 25.70s, environment 2ms, prepare 2.15s)
+
+ FAIL  Tests failed. Watching for file changes...
+       press h to show help, press q to quit

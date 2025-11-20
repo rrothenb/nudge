@@ -68,7 +68,7 @@ describe('Trust Propagation', () => {
       // Create a chain longer than max depth
       graph.addNode('user1', 'user', 1.0);
       for (let i = 2; i <= 5; i++) {
-        graph.addNode(`user${i}`, 'user', 0.0);
+        graph.addNode(`user${i}`, 'user'); // No direct trust
         graph.addEdge(`user${i - 1}`, `user${i}`, 0.9, 'trust');
       }
 
@@ -113,12 +113,12 @@ describe('Trust Propagation', () => {
     it('should respect custom damping factor', () => {
       const graph1 = new TrustGraph('user1');
       graph1.addNode('user1', 'user', 1.0);
-      graph1.addNode('user2', 'user', 0.0);
+      graph1.addNode('user2', 'user'); // No direct trust
       graph1.addEdge('user1', 'user2', 0.8, 'trust');
 
       const graph2 = new TrustGraph('user1');
       graph2.addNode('user1', 'user', 1.0);
-      graph2.addNode('user2', 'user', 0.0);
+      graph2.addNode('user2', 'user'); // No direct trust
       graph2.addEdge('user1', 'user2', 0.8, 'trust');
 
       propagateTrust(graph1, { dampingFactor: 0.7 });
@@ -176,7 +176,7 @@ describe('Trust Propagation', () => {
       const graph = new TrustGraph('user1');
       graph.addNode('user1', 'user', 1.0);
       for (let i = 2; i <= 5; i++) {
-        graph.addNode(`user${i}`, 'user', 0.0);
+        graph.addNode(`user${i}`, 'user'); // No direct trust
         graph.addEdge(`user${i - 1}`, `user${i}`, 0.9, 'trust');
       }
 
@@ -236,7 +236,7 @@ describe('Trust Propagation', () => {
       const graph = new TrustGraph('user1');
       graph.addNode('user1', 'user', 1.0);
       for (let i = 2; i <= 5; i++) {
-        graph.addNode(`user${i}`, 'user', 0.0);
+        graph.addNode(`user${i}`, 'user'); // No direct trust
         graph.addEdge(`user${i - 1}`, `user${i}`, 0.9, 'trust');
       }
 
