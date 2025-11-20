@@ -43,6 +43,15 @@ export class UnauthorizedError extends Error {
   }
 }
 
+export class MethodNotAllowedError extends Error {
+  statusCode = 405;
+
+  constructor(message: string = 'Method not allowed') {
+    super(message);
+    this.name = 'MethodNotAllowedError';
+  }
+}
+
 /**
  * Check if error is a DynamoDB conditional check failure
  */
@@ -72,6 +81,9 @@ export function formatError(error: any): { error: string; code: string; details?
   }
   if (error instanceof UnauthorizedError) {
     return { error: error.message, code: 'UNAUTHORIZED' };
+  }
+  if (error instanceof MethodNotAllowedError) {
+    return { error: error.message, code: 'METHOD_NOT_ALLOWED' };
   }
 
   // Log unexpected errors

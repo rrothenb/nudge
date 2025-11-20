@@ -15,15 +15,17 @@ import {
 // Mock the database modules
 vi.mock('../db/trust', () => ({
   listUserTrust: vi.fn(),
+  getTrustValue: vi.fn(),
+  getTrustValues: vi.fn(),
   storePropagatedTrust: vi.fn(),
 }));
 
 vi.mock('../db/assertions', () => ({
-  queryAllAssertions: vi.fn(),
+  queryAssertionsByType: vi.fn(),
 }));
 
-import { listUserTrust, storePropagatedTrust } from '../db/trust';
-import { queryAllAssertions } from '../db/assertions';
+import { listUserTrust, getTrustValue, getTrustValues, storePropagatedTrust } from '../db/trust';
+import { queryAssertionsByType } from '../db/assertions';
 
 describe('Trust Engine', () => {
   beforeEach(() => {
@@ -51,21 +53,24 @@ describe('Trust Engine', () => {
         },
       ];
 
-      vi.mocked(listUserTrust).mockResolvedValue(mockTrustRelations);
-      vi.mocked(queryAllAssertions).mockResolvedValue({ assertions: [] });
+      vi.mocked(listUserTrust).mockResolvedValue({
+        trustRelationships: mockTrustRelations
+      });
+      vi.mocked(queryAssertionsByType).mockResolvedValue({ assertions: [] });
       vi.mocked(storePropagatedTrust).mockResolvedValue(undefined);
 
       const result = await computeUserTrustNetwork('user1');
 
       expect(result).toBeDefined();
-      expect(result.userId).toBe('user1');
-      expect(result.trustValues).toBeDefined();
-      expect(listUserTrust).toHaveBeenCalledWith('user1');
+      expect(result.size).toBeGreaterThanOrEqual(0);
+      expect(listUserTrust).toHaveBeenCalledWith('user1', 1000);
     });
 
     it('should store propagated trust values', async () => {
-      vi.mocked(listUserTrust).mockResolvedValue([]);
-      vi.mocked(queryAllAssertions).mockResolvedValue({ assertions: [] });
+      vi.mocked(listUserTrust).mockResolvedValue({
+        trustRelationships: []
+      });
+      vi.mocked(queryAssertionsByType).mockResolvedValue({ assertions: [] });
       vi.mocked(storePropagatedTrust).mockResolvedValue(undefined);
 
       await computeUserTrustNetwork('user1');
@@ -76,6 +81,7 @@ describe('Trust Engine', () => {
 
   describe('getUserTrustForAssertion', () => {
     it('should return 0.5 default when no trust value computed', async () => {
+      vi.mocked(getTrustValue).mockResolvedValue(null);
       const trust = await getUserTrustForAssertion('user1', 'assertion1');
       expect(trust).toBe(0.5);
     });
@@ -83,19 +89,27 @@ describe('Trust Engine', () => {
 
   describe('getUserTrustForAssertions', () => {
     it('should return trust values for multiple assertions', async () => {
+      const mockTrustMap = new Map([
+        ['a1', { userId: 'user1', targetId: 'a1', targetType: 'assertion', trustValue: 0.9 }],
+        ['a2', { userId: 'user1', targetId: 'a2', targetType: 'assertion', trustValue: 0.5 }],
+        ['a3', { userId: 'user1', targetId: 'a3', targetType: 'assertion', trustValue: 0.3 }],
+      ]);
+      vi.mocked(getTrustValues).mockResolvedValue(mockTrustMap as any);
+
       const assertionIds = ['a1', 'a2', 'a3'];
       const trustValues = await getUserTrustForAssertions('user1', assertionIds);
 
       expect(trustValues).toBeDefined();
-      expect(Object.keys(trustValues).length).toBe(3);
-      expect(trustValues['a1']).toBeDefined();
-      expect(trustValues['a2']).toBeDefined();
-      expect(trustValues['a3']).toBeDefined();
+      expect(trustValues.size).toBe(3);
+      expect(trustValues.get('a1')).toBe(0.9);
+      expect(trustValues.get('a2')).toBe(0.5);
+      expect(trustValues.get('a3')).toBe(0.3);
     });
 
     it('should handle empty array', async () => {
+      vi.mocked(getTrustValues).mockResolvedValue(new Map());
       const trustValues = await getUserTrustForAssertions('user1', []);
-      expect(trustValues).toEqual({});
+      expect(trustValues.size).toBe(0);
     });
   });
 
@@ -107,20 +121,13 @@ describe('Trust Engine', () => {
         { assertionId: 'a3', content: 'Fact 3' },
       ];
 
-      // Mock getUserTrustForAssertions to return specific trust values
-      vi.mock('./engine', async (importOriginal) => {
-        const actual = await importOriginal<typeof import('./engine')>();
-        return {
-          ...actual,
-          getUserTrustForAssertions: vi.fn().mockResolvedValue(
-            new Map([
-              ['a1', 0.9],
-              ['a2', 0.5],
-              ['a3', 0.3],
-            ])
-          ),
-        };
-      });
+      // Mock the underlying getTrustValues call
+      const mockTrustMap = new Map([
+        ['a1', { userId: 'user1', targetId: 'a1', targetType: 'assertion', trustValue: 0.9 }],
+        ['a2', { userId: 'user1', targetId: 'a2', targetType: 'assertion', trustValue: 0.5 }],
+        ['a3', { userId: 'user1', targetId: 'a3', targetType: 'assertion', trustValue: 0.3 }],
+      ]);
+      vi.mocked(getTrustValues).mockResolvedValue(mockTrustMap as any);
 
       const filtered = await filterAssertionsByTrust('user1', assertions as any, 0.6);
 
@@ -134,6 +141,8 @@ describe('Trust Engine', () => {
         { assertionId: 'a2', content: 'Fact 2' },
       ];
 
+      vi.mocked(getTrustValues).mockResolvedValue(new Map());
+
       const filtered = await filterAssertionsByTrust('user1', assertions as any, 0);
 
       expect(filtered).toHaveLength(2);
@@ -141,6 +150,8 @@ describe('Trust Engine', () => {
 
     it('should use default 0.5 for missing trust values', async () => {
       const assertions = [{ assertionId: 'a1', content: 'Fact 1' }];
+
+      vi.mocked(getTrustValues).mockResolvedValue(new Map());
 
       const filtered = await filterAssertionsByTrust('user1', assertions as any, 0.4);
 
@@ -181,12 +192,24 @@ describe('Trust Engine', () => {
 
   describe('getTrustExplanation', () => {
     it('should return explanation for trust value', async () => {
+      vi.mocked(getTrustValue).mockResolvedValue({
+        userId: 'user1',
+        targetId: 'assertion1',
+        targetType: 'assertion',
+        trustValue: 0.8,
+        isDirectTrust: false,
+        propagatedFrom: ['user2', 'user3'],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as any);
+
       const explanation = await getTrustExplanation('user1', 'assertion1');
 
       expect(explanation).toBeDefined();
-      expect(explanation.targetId).toBe('assertion1');
-      expect(explanation.trustValue).toBeDefined();
-      expect(explanation.explanation).toBeDefined();
+      expect(explanation.trustValue).toBe(0.8);
+      expect(explanation.isDirectTrust).toBe(false);
+      expect(explanation.sources).toBeDefined();
+      expect(explanation.sources.length).toBe(2);
     });
 
     it('should include trust paths in explanation', async () => {

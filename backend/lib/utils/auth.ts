@@ -2,7 +2,7 @@
  * Authentication and authorization helpers
  */
 import type { APIGatewayProxyEvent } from 'aws-lambda';
-import { UnauthorizedError } from './errors';
+import { UnauthorizedError, ValidationError } from './errors';
 
 /**
  * Extract userId from Cognito JWT claims
@@ -44,12 +44,12 @@ export function checkOwnership(userId: string, resourceUserId: string): void {
  */
 export function parseBody<T>(event: APIGatewayProxyEvent): T {
   if (!event.body) {
-    throw new Error('Request body is required');
+    throw new ValidationError('Request body is required');
   }
 
   try {
     return JSON.parse(event.body) as T;
   } catch (error) {
-    throw new Error('Invalid JSON in request body');
+    throw new ValidationError('Invalid JSON in request body');
   }
 }

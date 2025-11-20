@@ -5,6 +5,8 @@ export const updateProfileSchema = z.object({
   bio: z.string().max(500).optional(),
   defaultTrustThreshold: z.number().min(0).max(1).optional(),
   defaultView: z.enum(['wiki', 'news', 'chat']).optional(),
+  trustThreshold: z.number().min(0).max(1).optional(),
+  openMindedness: z.number().min(0).max(1).optional(),
 });
 
 export const userPreferencesSchema = z.object({

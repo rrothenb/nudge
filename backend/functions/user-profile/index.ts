@@ -10,6 +10,7 @@ import {
 } from '../../lib/db/users';
 import { getUserId, getUserEmail, parseBody } from '../../lib/utils/auth';
 import { successResponse, errorResponse } from '../../lib/utils/response';
+import { MethodNotAllowedError, ValidationError } from '../../lib/utils/errors';
 import { updateProfileSchema } from '@nudge/shared';
 
 export async function handler(
@@ -27,7 +28,7 @@ export async function handler(
       return await handleUpdateProfile(userId, event);
     }
 
-    return errorResponse(new Error('Method not allowed'));
+    return errorResponse(new MethodNotAllowedError());
   } catch (error) {
     console.error('UserProfile error:', error);
     return errorResponse(error);
@@ -72,10 +73,7 @@ async function handleUpdateProfile(
   // Validate input
   const validation = updateProfileSchema.safeParse(body);
   if (!validation.success) {
-    return errorResponse({
-      name: 'ValidationError',
-      message: validation.error.message,
-    });
+    return errorResponse(new ValidationError('Invalid profile data', validation.error.issues));
   }
 
   // Update profile
