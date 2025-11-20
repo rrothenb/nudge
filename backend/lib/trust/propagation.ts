@@ -188,15 +188,13 @@ export function computeUserTrustForTarget(
   let totalTrust = 0;
   let totalWeight = 0;
 
-  for (const path of trustPaths) {
-    // Path strength is product of all edge weights
-    let pathStrength = 1.0;
-    for (const edge of path) {
-      pathStrength *= edge.weight;
-    }
+  for (const trustPath of trustPaths) {
+    // Use the pre-computed trust value from the path
+    const pathStrength = trustPath.trustValue;
 
     // Weight longer paths less (decay with distance)
-    const distanceDecay = Math.pow(0.8, path.length);
+    // path.length includes source, so actual hops = path.length - 1
+    const distanceDecay = Math.pow(0.8, trustPath.path.length - 1);
     const weight = pathStrength * distanceDecay;
 
     totalTrust += weight * pathStrength;
@@ -211,33 +209,49 @@ export function computeUserTrustForTarget(
   );
 }
 
+export interface TrustPath {
+  path: string[]; // Array of node IDs from source to target
+  trustValue: number; // Computed trust value along this path
+}
+
 /**
  * Find all trust paths from source to target (BFS with depth limit)
+ *
+ * This function helps explain why a user trusts a particular target by
+ * showing all the paths through which trust propagates.
+ *
+ * @param graph - The trust graph
+ * @param sourceId - The source node ID (typically the user)
+ * @param targetId - The target node ID
+ * @param maxDepth - Maximum path length to search
+ * @returns Array of trust paths with their computed trust values
  */
-function findTrustPaths(
+export function findTrustPaths(
   graph: TrustGraph,
   sourceId: string,
   targetId: string,
   maxDepth: number
-): Array<Array<{ from: string; to: string; weight: number }>> {
-  const paths: Array<Array<{ from: string; to: string; weight: number }>> = [];
+): TrustPath[] {
+  const paths: TrustPath[] = [];
   const queue: Array<{
     currentId: string;
-    path: Array<{ from: string; to: string; weight: number }>;
+    pathNodes: string[]; // Node IDs in the path
+    pathEdges: Array<{ from: string; to: string; weight: number }>;
     visited: Set<string>;
   }> = [
     {
       currentId: sourceId,
-      path: [],
+      pathNodes: [sourceId],
+      pathEdges: [],
       visited: new Set([sourceId]),
     },
   ];
 
   while (queue.length > 0) {
-    const { currentId, path, visited } = queue.shift()!;
+    const { currentId, pathNodes, pathEdges, visited } = queue.shift()!;
 
     // Check depth limit
-    if (path.length >= maxDepth) {
+    if (pathEdges.length >= maxDepth) {
       continue;
     }
 
@@ -250,22 +264,34 @@ function findTrustPaths(
         continue;
       }
 
-      const newPath = [...path, { from: edge.from, to: edge.to, weight: edge.weight }];
+      const newPathNodes = [...pathNodes, edge.to];
+      const newPathEdges = [...pathEdges, { from: edge.from, to: edge.to, weight: edge.weight }];
 
       // Found target?
       if (edge.to === targetId) {
-        paths.push(newPath);
+        // Compute trust value along this path
+        // Trust value is the product of all edge weights in the path
+        const trustValue = newPathEdges.reduce((product, edge) => product * edge.weight, 1.0);
+
+        paths.push({
+          path: newPathNodes,
+          trustValue,
+        });
         continue;
       }
 
       // Add to queue for further exploration
       queue.push({
         currentId: edge.to,
-        path: newPath,
+        pathNodes: newPathNodes,
+        pathEdges: newPathEdges,
         visited: new Set([...visited, edge.to]),
       });
     }
   }
+
+  // Sort paths by trust value (descending)
+  paths.sort((a, b) => b.trustValue - a.trustValue);
 
   return paths;
 }

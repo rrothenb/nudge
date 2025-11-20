@@ -195,8 +195,7 @@ describe('Trust Propagation', () => {
     });
   });
 
-  // TODO: Implement findTrustPaths function
-  describe.skip('findTrustPaths', () => {
+  describe('findTrustPaths', () => {
     it('should find direct path', () => {
       const graph = new TrustGraph('user1');
       graph.addNode('user1', 'user', 1.0);
