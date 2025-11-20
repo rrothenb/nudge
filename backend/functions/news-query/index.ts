@@ -20,10 +20,9 @@ export async function handler(
     const limit = params.limit ? parseInt(params.limit, 10) : 50;
     const since = params.since; // ISO timestamp
 
-    // Get user profile for trust threshold and openMindedness
+    // Get user profile for trust threshold
     const profile = await getUserProfile(userId);
     const threshold = profile.defaultTrustThreshold;
-    const openMindedness = profile.openMindedness;
 
     // Query recent news assertions
     const assertions = await queryRecentAssertions(limit * 2, since);
@@ -47,10 +46,8 @@ export async function handler(
     for (const assertion of assertions) {
       const trustValue = trustValues.get(assertion.assertionId) ?? 0.5;
 
-      // Apply openMindedness: show items within (threshold - openMindedness)
-      const effectiveThreshold = threshold - openMindedness;
-
-      if (trustValue >= effectiveThreshold) {
+      // Filter by threshold
+      if (trustValue >= threshold) {
         // Calculate recency score (decay over 24 hours)
         const hoursAgo = assertion.publishedAt
           ? (Date.now() - new Date(assertion.publishedAt).getTime()) / (1000 * 60 * 60)
@@ -85,7 +82,6 @@ export async function handler(
       items: limitedItems,
       total: limitedItems.length,
       threshold,
-      effectiveThreshold: threshold - openMindedness,
     });
   } catch (error) {
     console.error('NewsQuery error:', error);

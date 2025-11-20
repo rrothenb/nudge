@@ -27,7 +27,6 @@ describe('User Profile Lambda', () => {
         email: 'test@example.com',
         displayName: 'Test User',
         trustThreshold: 0.7,
-        openMindedness: 0.2,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -49,7 +48,6 @@ describe('User Profile Lambda', () => {
         email: 'test@example.com',
         displayName: 'test',
         trustThreshold: 0.7,
-        openMindedness: 0.2,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -88,7 +86,6 @@ describe('User Profile Lambda', () => {
       const updateData = {
         displayName: 'New Name',
         trustThreshold: 0.8,
-        openMindedness: 0.3,
       };
 
       const updatedProfile = {
@@ -116,21 +113,6 @@ describe('User Profile Lambda', () => {
     it('should return 400 for invalid trust threshold', async () => {
       const invalidData = {
         trustThreshold: 1.5, // Invalid: should be 0-1
-      };
-
-      const event = createMockEvent({
-        httpMethod: 'PUT',
-        body: JSON.stringify(invalidData),
-      });
-
-      const response = await handler(event);
-
-      expect(response.statusCode).toBe(400);
-    });
-
-    it('should return 400 for invalid openMindedness', async () => {
-      const invalidData = {
-        openMindedness: -0.1, // Invalid: should be 0-1
       };
 
       const event = createMockEvent({
@@ -181,7 +163,6 @@ describe('User Profile Lambda', () => {
         email: 'test@example.com',
         displayName: 'Test',
         trustThreshold: 0.7,
-        openMindedness: 0.2,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });

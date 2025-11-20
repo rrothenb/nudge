@@ -5,7 +5,6 @@
 // Trust defaults
 export const DEFAULT_TRUST_VALUE = 0.5;
 export const DEFAULT_TRUST_THRESHOLD = 0.5;
-export const DEFAULT_OPEN_MINDEDNESS = 0.2;  // Show content 0.2 below threshold
 
 // Trust propagation
 export const TRUST_DAMPING_FACTOR = 0.7;

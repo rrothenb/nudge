@@ -299,7 +299,7 @@ Features:
   - Culture: "Jazz Music", "Renaissance Art"
 - [ ] Create 12 test users with diverse profiles:
   - Scientists, journalists, educators, skeptics
-  - Different trust thresholds and openMindedness values
+  - Different trust thresholds (0.4-0.85)
 - [ ] Establish varied trust networks:
   - Some users trust scientific sources highly
   - Others trust news sources

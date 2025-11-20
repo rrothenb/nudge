@@ -104,7 +104,6 @@ function generateUsers(count: number): User[] {
       email: 'sarah.chen@example.com',
       bio: 'Quantum physicist and science communicator',
       threshold: 0.7,
-      openMindedness: 0.3,
       interests: ['physics', 'quantum computing', 'science education'],
     },
     {
@@ -112,7 +111,6 @@ function generateUsers(count: number): User[] {
       email: 'marcus.j@example.com',
       bio: 'Investigative journalist covering technology and politics',
       threshold: 0.6,
-      openMindedness: 0.6,
       interests: ['journalism', 'politics', 'technology'],
     },
     {
@@ -120,7 +118,6 @@ function generateUsers(count: number): User[] {
       email: 'e.rodriguez@example.com',
       bio: 'History professor specializing in ancient civilizations',
       threshold: 0.8,
-      openMindedness: 0.4,
       interests: ['history', 'archaeology', 'anthropology'],
     },
     {
@@ -128,7 +125,6 @@ function generateUsers(count: number): User[] {
       email: 'alex.kim@example.com',
       bio: 'Software engineer and open source enthusiast',
       threshold: 0.5,
-      openMindedness: 0.7,
       interests: ['programming', 'technology', 'AI'],
     },
     {
@@ -136,7 +132,6 @@ function generateUsers(count: number): User[] {
       email: 'j.wright@example.com',
       bio: 'Climate scientist at National Research Institute',
       threshold: 0.75,
-      openMindedness: 0.25,
       interests: ['climate change', 'environmental science', 'policy'],
     },
     {
@@ -144,7 +139,6 @@ function generateUsers(count: number): User[] {
       email: 'maya.patel@example.com',
       bio: 'Educator and curriculum developer',
       threshold: 0.65,
-      openMindedness: 0.5,
       interests: ['education', 'child development', 'pedagogy'],
     },
     {
@@ -152,7 +146,6 @@ function generateUsers(count: number): User[] {
       email: 'tom.a@example.com',
       bio: 'Skeptic and critical thinking advocate',
       threshold: 0.85,
-      openMindedness: 0.2,
       interests: ['skepticism', 'science', 'philosophy'],
     },
     {
@@ -160,7 +153,6 @@ function generateUsers(count: number): User[] {
       email: 'yuki.t@example.com',
       bio: 'Arts and culture critic',
       threshold: 0.4,
-      openMindedness: 0.8,
       interests: ['art', 'culture', 'music', 'literature'],
     },
     {
@@ -168,7 +160,6 @@ function generateUsers(count: number): User[] {
       email: 'rachel.green@example.com',
       bio: 'Biologist researching genetics and evolution',
       threshold: 0.7,
-      openMindedness: 0.35,
       interests: ['biology', 'genetics', 'evolution'],
     },
     {
@@ -176,7 +167,6 @@ function generateUsers(count: number): User[] {
       email: 'david.m@example.com',
       bio: 'Independent researcher and fact-checker',
       threshold: 0.75,
-      openMindedness: 0.45,
       interests: ['fact-checking', 'research', 'media literacy'],
     },
     {
@@ -184,7 +174,6 @@ function generateUsers(count: number): User[] {
       email: 'sophia.lee@example.com',
       bio: 'Philosopher exploring ethics and epistemology',
       threshold: 0.5,
-      openMindedness: 0.9,
       interests: ['philosophy', 'ethics', 'epistemology'],
     },
     {
@@ -192,7 +181,6 @@ function generateUsers(count: number): User[] {
       email: 'chris.b@example.com',
       bio: 'Data scientist and statistics enthusiast',
       threshold: 0.7,
-      openMindedness: 0.4,
       interests: ['data science', 'statistics', 'machine learning'],
     },
   ];
@@ -206,7 +194,6 @@ function generateUsers(count: number): User[] {
       displayName: profile.name,
       profileImage: `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.name}`,
       trustThreshold: profile.threshold,
-      openMindedness: profile.openMindedness,
       bio: profile.bio,
       topics: profile.interests,
       createdAt: new Date().toISOString(),
@@ -589,7 +576,7 @@ async function main() {
     console.log('Users:');
     users.slice(0, 3).forEach((u) => {
       console.log(`  - ${u.displayName} (${u.email})`);
-      console.log(`    Trust Threshold: ${u.trustThreshold}, Open-mindedness: ${u.openMindedness}`);
+      console.log(`    Trust Threshold: ${u.trustThreshold}`);
     });
     console.log(`  ... and ${users.length - 3} more\n`);
 

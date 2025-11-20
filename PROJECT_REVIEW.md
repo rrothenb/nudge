@@ -299,7 +299,7 @@ The system uses an iterative diffusion algorithm:
 - LLM used for both extraction and generation
 
 ### Data Model
-- **Users**: Profile, preferences (threshold, openMindedness)
+- **Users**: Profile, preferences (threshold)
 - **Assertions**: Atomic facts with source, content, topics
 - **Trust**: User → Target (user/source/group) relationships
 - **Groups**: Collections of trusted entities

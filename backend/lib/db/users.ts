@@ -5,7 +5,7 @@ import { GetCommand, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { getDynamoDBClient, TABLES } from './client';
 import { NotFoundError } from '../utils/errors';
 import type { UserProfile, UpdateProfileInput } from '@nudge/shared';
-import { DEFAULT_TRUST_THRESHOLD, DEFAULT_OPEN_MINDEDNESS } from '@nudge/shared';
+import { DEFAULT_TRUST_THRESHOLD } from '@nudge/shared';
 
 /**
  * Create a new user profile
@@ -24,7 +24,6 @@ export async function createUserProfile(
     displayName,
     bio: '',
     defaultTrustThreshold: DEFAULT_TRUST_THRESHOLD,
-    openMindedness: DEFAULT_OPEN_MINDEDNESS,
     showControversySignals: true,
     showAlternateViews: true,
     defaultView: 'wiki',
@@ -110,12 +109,6 @@ export async function updateUserProfile(
     updateExpressions.push('#defaultTrustThreshold = :defaultTrustThreshold');
     expressionAttributeNames['#defaultTrustThreshold'] = 'defaultTrustThreshold';
     expressionAttributeValues[':defaultTrustThreshold'] = updates.defaultTrustThreshold;
-  }
-
-  if (updates.openMindedness !== undefined) {
-    updateExpressions.push('#openMindedness = :openMindedness');
-    expressionAttributeNames['#openMindedness'] = 'openMindedness';
-    expressionAttributeValues[':openMindedness'] = updates.openMindedness;
   }
 
   if (updates.defaultView !== undefined) {
