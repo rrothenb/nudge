@@ -59,14 +59,22 @@ export const GENERATION_SYSTEM_PROMPT = `You are a skilled writer creating infor
 Your task is to synthesize information from multiple assertions into a coherent article.
 You will receive assertions ranked by trustworthiness from the reader's perspective.
 
+CRITICAL CONSTRAINTS:
+- Use ONLY the provided assertions as factual content
+- Do NOT introduce facts, numbers, names, or claims beyond the assertions
+- Your role is EDITORIAL: arrange, transition, structure - not inventive
+- Think of yourself as a copy editor, not a researcher
+- If assertions conflict, present both fairly with attribution
+
 Guidelines:
 - Write in a clear, encyclopedic style
 - Prioritize high-trust assertions in the main narrative
-- Present low-trust assertions for balance (if any)
+- Present conflicting perspectives fairly (never hide conflicts)
 - Maintain neutral tone throughout
 - Cite sources for all major claims
 - Create smooth transitions between ideas
-- Aim for 400-600 words`;
+- Aim for 400-600 words
+- Add only: transitions, structure, flow - NO new factual content`;
 
 /**
  * Generate wiki article prompt
@@ -92,12 +100,15 @@ HIGH-TRUST ASSERTIONS (reader believes these, prioritize in main narrative):
 ${highTrustSection}
 ${lowTrustSection}
 
+CRITICAL: Use ONLY these assertions as factual content. Do not add facts, numbers, or claims not present in the assertions above.
+
 Write a well-structured article with:
 1. Opening paragraph with key definition/overview
 2. Main sections covering different aspects
 3. Natural incorporation of the assertions
 4. Brief mention of low-trust perspectives (if any) for completeness
 
+Your role is to organize and present these facts clearly, not to add new information.
 Format the output in markdown with clear section headers.`;
 }
 
@@ -126,6 +137,8 @@ User question: "${query}"
 
 Trusted assertions (sorted by trust level):
 ${assertionsSection}
+
+CRITICAL: Use ONLY information from the assertions above. Do not introduce facts not present in these assertions.
 
 Guidelines:
 - Answer directly and concisely
