@@ -1,212 +1,333 @@
 /**
- * Trust propagation algorithm
+ * Trust inference using similarity-based diffusion
  *
- * Implements iterative trust diffusion with damping and convergence detection.
- * Based on the algorithm described in trust_knowledge_unified_spec_v2.md
+ * ALGORITHM CHANGE: This module replaces PageRank-style graph propagation
+ * with similarity-based trust inference. Trust is inferred based on similarity
+ * in trust space: users with similar trust patterns influence each other's
+ * inferred values.
+ *
+ * Key properties:
+ * - Non-transitive: Influence based on similarity, not paths
+ * - Finds "people like me": Explicit goal of the algorithm
+ * - Discovers Schelling points: Sources trusted across communities surface
+ * - Sybil-resistant: Fake users with default 0.0 contribute nothing
+ * - Scalable: O(N) naive, O(log N) with ANN structures
  */
-import type { TrustGraph, TrustNode } from './graph';
-import {
-  DEFAULT_TRUST_VALUE,
-  TRUST_DAMPING_FACTOR,
-  TRUST_MAX_ITERATIONS,
-  TRUST_CONVERGENCE_THRESHOLD,
-  TRUST_MAX_DEPTH,
-} from '@nudge/shared';
 
-export interface PropagationResult {
-  converged: boolean;
-  iterations: number;
-  changes: Map<string, number>; // nodeId -> new trust value
-  stats: {
-    nodesUpdated: number;
-    maxChange: number;
-    averageChange: number;
-  };
+import type { TrustGraph } from './graph';
+import {
+  SIMILARITY_BANDWIDTH_SIGMA,
+  MIN_OVERLAP_FOR_SIMILARITY,
+  CONFIDENCE_THRESHOLD,
+  SIMILARITY_MAX_COMPARISONS,
+} from '@nudge/shared';
+import { getDefaultTrust } from '../../../shared/constants/trust-defaults';
+import {
+  type TrustVector,
+  type SimilarityResult,
+  findSimilarUsers,
+  computeWeightedAverage,
+} from './similarity';
+
+export interface InferenceResult {
+  trustValue: number;
+  confidence: number; // 0 to 1, based on total similarity weight
+  numSimilarUsers: number;
+  isExplicit: boolean; // true if user explicitly set this value
+  isDefaulted: boolean; // true if fell back to entity default
 }
 
 /**
- * Propagate trust through the graph using iterative diffusion
+ * Infer trust value for a target entity from a user's perspective
  *
  * Algorithm:
- * 1. Start with direct trust values
- * 2. For each iteration:
- *    - For each node without direct trust:
- *      - Compute trust as weighted average of incoming edges
- *      - Apply damping factor to blend with default trust
- * 3. Repeat until convergence or max iterations
- */
-export function propagateTrust(
-  graph: TrustGraph,
-  options?: {
-    dampingFactor?: number;
-    maxIterations?: number;
-    convergenceThreshold?: number;
-    maxDepth?: number;
-  }
-): PropagationResult {
-  const dampingFactor = options?.dampingFactor ?? TRUST_DAMPING_FACTOR;
-  const maxIterations = options?.maxIterations ?? TRUST_MAX_ITERATIONS;
-  const convergenceThreshold = options?.convergenceThreshold ?? TRUST_CONVERGENCE_THRESHOLD;
-  const maxDepth = options?.maxDepth ?? TRUST_MAX_DEPTH;
-
-  const changes = new Map<string, number>();
-  let iteration = 0;
-  let converged = false;
-
-  // Get all nodes that need trust computation
-  const nodesToCompute = graph.getAllNodes().filter((node) => !graph.hasDirectTrust(node.id));
-
-  console.log(`Starting trust propagation for ${nodesToCompute.length} nodes`);
-
-  while (iteration < maxIterations && !converged) {
-    iteration++;
-    let maxChange = 0;
-    let totalChange = 0;
-    let nodesUpdated = 0;
-
-    for (const node of nodesToCompute) {
-      const oldTrust = graph.getTrustValue(node.id);
-      const newTrust = computeNodeTrust(graph, node.id, dampingFactor, maxDepth);
-
-      // Update computed trust
-      graph.setComputedTrust(node.id, newTrust);
-
-      // Track changes
-      const change = Math.abs(newTrust - oldTrust);
-      if (change > 0.001) {
-        // Only count non-trivial changes
-        changes.set(node.id, newTrust);
-        maxChange = Math.max(maxChange, change);
-        totalChange += change;
-        nodesUpdated++;
-      }
-    }
-
-    // Check for convergence
-    if (maxChange < convergenceThreshold) {
-      converged = true;
-      console.log(`Trust propagation converged after ${iteration} iterations`);
-    }
-  }
-
-  const stats = {
-    nodesUpdated: changes.size,
-    maxChange: Math.max(...Array.from(changes.values()).map((v, i, arr) =>
-      Math.abs(v - (arr[i-1] ?? DEFAULT_TRUST_VALUE)))),
-    averageChange: changes.size > 0
-      ? Array.from(changes.values()).reduce((sum, v) => sum + v, 0) / changes.size
-      : 0,
-  };
-
-  return {
-    converged,
-    iterations: iteration,
-    changes,
-    stats,
-  };
-}
-
-/**
- * Compute trust value for a single node
- */
-function computeNodeTrust(
-  graph: TrustGraph,
-  nodeId: string,
-  dampingFactor: number,
-  maxDepth: number,
-  currentDepth: number = 0
-): number {
-  // If node has direct trust, use it
-  if (graph.hasDirectTrust(nodeId)) {
-    return graph.getTrustValue(nodeId);
-  }
-
-  // Limit propagation depth
-  if (currentDepth >= maxDepth) {
-    return DEFAULT_TRUST_VALUE;
-  }
-
-  // Get incoming edges (sources that support this node)
-  const incomingEdges = graph.getIncomingEdges(nodeId);
-
-  if (incomingEdges.length === 0) {
-    return DEFAULT_TRUST_VALUE;
-  }
-
-  // Compute weighted average of incoming trust
-  let weightedSum = 0;
-  let totalWeight = 0;
-
-  for (const edge of incomingEdges) {
-    // Get trust in the source node
-    const sourceTrust = graph.getTrustValue(edge.from);
-
-    // Weight by edge weight and source trust
-    const weight = edge.weight * sourceTrust;
-
-    weightedSum += weight * sourceTrust;
-    totalWeight += weight;
-  }
-
-  // Compute raw trust
-  const rawTrust = totalWeight > 0 ? weightedSum / totalWeight : DEFAULT_TRUST_VALUE;
-
-  // Apply damping: blend with default trust
-  // T_new = α * T_computed + (1 - α) * T_default
-  const dampedTrust = dampingFactor * rawTrust + (1 - dampingFactor) * DEFAULT_TRUST_VALUE;
-
-  // Clamp to [0, 1]
-  return Math.max(0, Math.min(1, dampedTrust));
-}
-
-/**
- * Compute trust for a specific target from a user's perspective
+ * 1. Check for explicit trust (always wins)
+ * 2. Find users who have opinions on the target
+ * 3. Compute similarity to those users
+ * 4. Compute similarity-weighted average of their opinions
+ * 5. Blend with entity default based on confidence
  *
- * This is a focused computation that traces trust paths from user to target.
- * More efficient than full graph propagation for single queries.
+ * @param userId - The user to infer trust for
+ * @param targetId - The entity to infer trust in
+ * @param targetType - The type of entity (for default trust)
+ * @param allUserVectors - All users' trust vectors
+ * @param userTrustValues - Map of userId -> targetId -> trust value
+ * @param options - Configuration options
+ * @returns Inferred trust result with confidence metrics
+ */
+export function inferTrust(
+  userId: string,
+  targetId: string,
+  targetType: 'user' | 'source' | 'bot' | 'assertion' | 'group',
+  allUserVectors: TrustVector[],
+  userTrustValues: Map<string, Map<string, number>>,
+  options?: {
+    sigma?: number;
+    minOverlap?: number;
+    confidenceThreshold?: number;
+    maxComparisons?: number;
+  }
+): InferenceResult {
+  const sigma = options?.sigma ?? SIMILARITY_BANDWIDTH_SIGMA;
+  const confidenceThreshold = options?.confidenceThreshold ?? CONFIDENCE_THRESHOLD;
+  const maxComparisons = options?.maxComparisons ?? SIMILARITY_MAX_COMPARISONS;
+
+  // 1. Check for explicit trust (always wins)
+  const explicitTrust = userTrustValues.get(userId)?.get(targetId);
+  if (explicitTrust !== undefined) {
+    return {
+      trustValue: explicitTrust,
+      confidence: 1.0,
+      numSimilarUsers: 0,
+      isExplicit: true,
+      isDefaulted: false,
+    };
+  }
+
+  // 2. Get the user's trust vector
+  const userVector = allUserVectors.find((v) => v.userId === userId);
+  if (!userVector) {
+    // User has no trust values set - use entity default
+    const defaultTrust = getDefaultTrust(targetId, targetType, userId);
+    return {
+      trustValue: defaultTrust,
+      confidence: 0,
+      numSimilarUsers: 0,
+      isExplicit: false,
+      isDefaulted: true,
+    };
+  }
+
+  // 3. Find users who have opinions on the target
+  const usersWithOpinion = allUserVectors.filter((v) => {
+    const userValues = userTrustValues.get(v.userId);
+    return userValues?.has(targetId);
+  });
+
+  if (usersWithOpinion.length === 0) {
+    // No one has an opinion on this target - use entity default
+    const defaultTrust = getDefaultTrust(targetId, targetType, userId);
+    return {
+      trustValue: defaultTrust,
+      confidence: 0,
+      numSimilarUsers: 0,
+      isExplicit: false,
+      isDefaulted: true,
+    };
+  }
+
+  // 4. Compute similarity to users with opinions
+  const similarUsers = findSimilarUsers(
+    userVector,
+    usersWithOpinion,
+    sigma,
+    maxComparisons
+  );
+
+  if (similarUsers.length === 0) {
+    // No similar users - use entity default
+    const defaultTrust = getDefaultTrust(targetId, targetType, userId);
+    return {
+      trustValue: defaultTrust,
+      confidence: 0,
+      numSimilarUsers: 0,
+      isExplicit: false,
+      isDefaulted: true,
+    };
+  }
+
+  // 5. Compute similarity-weighted average
+  const { weightedAverage, totalWeight } = computeWeightedAverage(
+    similarUsers,
+    (uid) => userTrustValues.get(uid)?.get(targetId)
+  );
+
+  // 6. Check if we have enough confidence
+  if (totalWeight < confidenceThreshold) {
+    // Not enough similar users with opinions - blend with entity default
+    const defaultTrust = getDefaultTrust(targetId, targetType, userId);
+    const confidence = Math.min(1.0, totalWeight / confidenceThreshold);
+    const blendedTrust = confidence * weightedAverage + (1 - confidence) * defaultTrust;
+
+    return {
+      trustValue: blendedTrust,
+      confidence,
+      numSimilarUsers: similarUsers.length,
+      isExplicit: false,
+      isDefaulted: true, // Partially defaulted
+    };
+  }
+
+  // 7. Sufficient confidence - use the inferred value
+  return {
+    trustValue: weightedAverage,
+    confidence: 1.0,
+    numSimilarUsers: similarUsers.length,
+    isExplicit: false,
+    isDefaulted: false,
+  };
+}
+
+/**
+ * Batch inference for multiple targets
+ *
+ * More efficient than calling inferTrust multiple times because it
+ * computes user similarities once and reuses them.
+ *
+ * @param userId - The user to infer trust for
+ * @param targetIds - Array of entity IDs to infer trust for
+ * @param targetTypes - Map of targetId -> entity type
+ * @param allUserVectors - All users' trust vectors
+ * @param userTrustValues - Map of userId -> targetId -> trust value
+ * @param options - Configuration options
+ * @returns Map of targetId -> inference result
+ */
+export function inferTrustBatch(
+  userId: string,
+  targetIds: string[],
+  targetTypes: Map<string, 'user' | 'source' | 'bot' | 'assertion' | 'group'>,
+  allUserVectors: TrustVector[],
+  userTrustValues: Map<string, Map<string, number>>,
+  options?: {
+    sigma?: number;
+    confidenceThreshold?: number;
+    maxComparisons?: number;
+  }
+): Map<string, InferenceResult> {
+  const results = new Map<string, InferenceResult>();
+
+  // Process each target
+  for (const targetId of targetIds) {
+    const targetType = targetTypes.get(targetId) ?? 'user';
+    const result = inferTrust(
+      userId,
+      targetId,
+      targetType,
+      allUserVectors,
+      userTrustValues,
+      options
+    );
+    results.set(targetId, result);
+  }
+
+  return results;
+}
+
+/**
+ * Explain why a trust value was inferred
+ *
+ * Returns the top contributors to the inferred trust value,
+ * showing which similar users influenced the result.
+ *
+ * @param userId - The user whose trust is being explained
+ * @param targetId - The entity being trusted
+ * @param allUserVectors - All users' trust vectors
+ * @param userTrustValues - Map of userId -> targetId -> trust value
+ * @param options - Configuration options
+ * @returns Top similar users who contributed to the inference
+ */
+export function explainTrustInference(
+  userId: string,
+  targetId: string,
+  allUserVectors: TrustVector[],
+  userTrustValues: Map<string, Map<string, number>>,
+  options?: {
+    sigma?: number;
+    maxComparisons?: number;
+    topN?: number;
+  }
+): Array<{
+  userId: string;
+  similarity: number;
+  trustValue: number;
+  contribution: number; // Percentage contribution to final value
+}> {
+  const sigma = options?.sigma ?? SIMILARITY_BANDWIDTH_SIGMA;
+  const maxComparisons = options?.maxComparisons ?? SIMILARITY_MAX_COMPARISONS;
+  const topN = options?.topN ?? 10;
+
+  // Get user vector
+  const userVector = allUserVectors.find((v) => v.userId === userId);
+  if (!userVector) {
+    return [];
+  }
+
+  // Find users with opinions on target
+  const usersWithOpinion = allUserVectors.filter((v) => {
+    const userValues = userTrustValues.get(v.userId);
+    return userValues?.has(targetId);
+  });
+
+  // Compute similarities
+  const similarUsers = findSimilarUsers(
+    userVector,
+    usersWithOpinion,
+    sigma,
+    maxComparisons
+  );
+
+  // Compute total weight for contribution percentages
+  let totalWeight = 0;
+  const contributors: Array<{
+    userId: string;
+    similarity: number;
+    trustValue: number;
+    weight: number;
+  }> = [];
+
+  for (const { userId: otherUserId, similarity } of similarUsers) {
+    const trustValue = userTrustValues.get(otherUserId)?.get(targetId);
+    if (trustValue !== undefined) {
+      totalWeight += similarity;
+      contributors.push({
+        userId: otherUserId,
+        similarity,
+        trustValue,
+        weight: similarity,
+      });
+    }
+  }
+
+  // Convert weights to contribution percentages
+  const results = contributors
+    .map((c) => ({
+      userId: c.userId,
+      similarity: c.similarity,
+      trustValue: c.trustValue,
+      contribution: totalWeight > 0 ? (c.weight / totalWeight) * 100 : 0,
+    }))
+    .sort((a, b) => b.contribution - a.contribution)
+    .slice(0, topN);
+
+  return results;
+}
+
+// =============================================================================
+// LEGACY FUNCTIONS (for backwards compatibility and explanation)
+// =============================================================================
+
+/**
+ * @deprecated Use inferTrust instead
+ * Legacy function for graph-based propagation
  */
 export function computeUserTrustForTarget(
   graph: TrustGraph,
   userId: string,
   targetId: string,
-  maxDepth: number = TRUST_MAX_DEPTH
+  maxDepth: number = 3
 ): number {
-  // Check if user has direct trust
+  console.warn(
+    'computeUserTrustForTarget is deprecated. Use inferTrust with similarity-based algorithm.'
+  );
+
+  // For backwards compatibility, check direct trust
   const directTrust = graph.getNode(targetId)?.directTrust;
   if (directTrust !== undefined) {
     return directTrust;
   }
 
-  // Trace trust paths from user to target
-  const trustPaths = findTrustPaths(graph, userId, targetId, maxDepth);
-
-  if (trustPaths.length === 0) {
-    return DEFAULT_TRUST_VALUE;
-  }
-
-  // Compute trust as weighted average of all paths
-  let totalTrust = 0;
-  let totalWeight = 0;
-
-  for (const trustPath of trustPaths) {
-    // Use the pre-computed trust value from the path
-    const pathStrength = trustPath.trustValue;
-
-    // Weight longer paths less (decay with distance)
-    // path.length includes source, so actual hops = path.length - 1
-    const distanceDecay = Math.pow(0.8, trustPath.path.length - 1);
-    const weight = pathStrength * distanceDecay;
-
-    totalTrust += weight * pathStrength;
-    totalWeight += weight;
-  }
-
-  const computedTrust = totalWeight > 0 ? totalTrust / totalWeight : DEFAULT_TRUST_VALUE;
-
-  // Apply damping
-  return (
-    TRUST_DAMPING_FACTOR * computedTrust + (1 - TRUST_DAMPING_FACTOR) * DEFAULT_TRUST_VALUE
-  );
+  // Fall back to entity default
+  return getDefaultTrust(targetId, 'user', userId);
 }
 
 export interface TrustPath {
@@ -215,10 +336,10 @@ export interface TrustPath {
 }
 
 /**
- * Find all trust paths from source to target (BFS with depth limit)
+ * Find trust paths from source to target
  *
- * This function helps explain why a user trusts a particular target by
- * showing all the paths through which trust propagates.
+ * Note: This is kept for explanation and debugging, but the new
+ * similarity-based algorithm does NOT use paths. Trust is not transitive.
  *
  * @param graph - The trust graph
  * @param sourceId - The source node ID (typically the user)
@@ -235,7 +356,7 @@ export function findTrustPaths(
   const paths: TrustPath[] = [];
   const queue: Array<{
     currentId: string;
-    pathNodes: string[]; // Node IDs in the path
+    pathNodes: string[];
     pathEdges: Array<{ from: string; to: string; weight: number }>;
     visited: Set<string>;
   }> = [
@@ -270,7 +391,6 @@ export function findTrustPaths(
       // Found target?
       if (edge.to === targetId) {
         // Compute trust value along this path
-        // Trust value is the product of all edge weights in the path
         const trustValue = newPathEdges.reduce((product, edge) => product * edge.weight, 1.0);
 
         paths.push({
@@ -294,33 +414,4 @@ export function findTrustPaths(
   paths.sort((a, b) => b.trustValue - a.trustValue);
 
   return paths;
-}
-
-/**
- * Identify sources of trust for a given node (for explanation)
- */
-export function identifyTrustSources(
-  graph: TrustGraph,
-  nodeId: string,
-  minContribution: number = 0.1
-): Array<{ sourceId: string; contribution: number }> {
-  const incomingEdges = graph.getIncomingEdges(nodeId);
-  const sources: Array<{ sourceId: string; contribution: number }> = [];
-
-  for (const edge of incomingEdges) {
-    const sourceTrust = graph.getTrustValue(edge.from);
-    const contribution = edge.weight * sourceTrust;
-
-    if (contribution >= minContribution) {
-      sources.push({
-        sourceId: edge.from,
-        contribution,
-      });
-    }
-  }
-
-  // Sort by contribution (descending)
-  sources.sort((a, b) => b.contribution - a.contribution);
-
-  return sources;
 }

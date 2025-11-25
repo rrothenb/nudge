@@ -3,14 +3,31 @@
  */
 
 // Trust defaults
+/**
+ * @deprecated Use getDefaultTrust() from trust-defaults.ts instead
+ * This provides entity-type-specific defaults for better security
+ */
 export const DEFAULT_TRUST_VALUE = 0.5;
 export const DEFAULT_TRUST_THRESHOLD = 0.5;
 
-// Trust propagation
+// Trust propagation (PageRank-style - DEPRECATED)
+/**
+ * @deprecated PageRank-style propagation replaced with similarity-based diffusion
+ * These parameters are no longer used in the new algorithm
+ */
 export const TRUST_DAMPING_FACTOR = 0.7;
-export const TRUST_MAX_DEPTH = 3;            // Limit propagation to 3 hops
+/**
+ * @deprecated PageRank-style propagation replaced with similarity-based diffusion
+ */
+export const TRUST_MAX_DEPTH = 3;
 export const TRUST_CONVERGENCE_THRESHOLD = 0.01;
 export const TRUST_MAX_ITERATIONS = 10;
+
+// Similarity-based trust inference (new algorithm)
+export const SIMILARITY_BANDWIDTH_SIGMA = 0.3;        // σ parameter for Gaussian kernel
+export const MIN_OVERLAP_FOR_SIMILARITY = 3;          // Minimum shared trust values to compute similarity
+export const CONFIDENCE_THRESHOLD = 5.0;              // Sum of similarities needed for confident inference
+export const SIMILARITY_MAX_COMPARISONS = 1000;       // Limit comparisons for performance (naive implementation)
 
 // Content generation
 export const CACHE_TTL_HOURS = 24;

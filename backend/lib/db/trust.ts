@@ -7,6 +7,7 @@ import {
   QueryCommand,
   DeleteCommand,
   BatchGetCommand,
+  ScanCommand,
 } from '@aws-sdk/lib-dynamodb';
 import { getDynamoDBClient, TABLES } from './client';
 import type { TrustRelationship, SetTrustInput } from '@nudge/shared';
@@ -262,4 +263,54 @@ export async function getTrustedSources(
   return trustRelationships
     .filter((t) => t.targetType === 'source' && t.trustValue >= threshold)
     .map((t) => t.targetId);
+}
+
+/**
+ * Get all users' trust relationships (for building trust vectors)
+ *
+ * This scans the entire trust table and returns a map of userId -> trust relationships.
+ * Used by the similarity-based trust inference algorithm.
+ *
+ * NOTE: In production with many users, this would be expensive. Consider:
+ * - Caching with periodic refresh
+ * - Using DynamoDB Streams to incrementally update
+ * - Partitioning by user cohorts
+ */
+export async function getAllUsersTrust(): Promise<Map<string, TrustRelationship[]>> {
+  const client = getDynamoDBClient();
+  const usersTrust = new Map<string, TrustRelationship[]>();
+
+  // Scan the table (expensive in production, but works for POC)
+  let lastEvaluatedKey: Record<string, any> | undefined;
+  let itemCount = 0;
+
+  do {
+    const result = await client.send(
+      new ScanCommand({
+        TableName: TABLES.TRUST,
+        ExclusiveStartKey: lastEvaluatedKey,
+      })
+    );
+
+    // Process items
+    if (result.Items) {
+      for (const item of result.Items) {
+        const { PK, SK, GSI1PK, GSI1SK, ...trust } = item;
+        const trustRel = trust as TrustRelationship;
+        const userId = trustRel.userId;
+
+        if (!usersTrust.has(userId)) {
+          usersTrust.set(userId, []);
+        }
+        usersTrust.get(userId)!.push(trustRel);
+        itemCount++;
+      }
+    }
+
+    lastEvaluatedKey = result.LastEvaluatedKey;
+  } while (lastEvaluatedKey);
+
+  console.log(`Loaded trust relationships for ${usersTrust.size} users (${itemCount} total relationships)`);
+
+  return usersTrust;
 }
