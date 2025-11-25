@@ -48,6 +48,108 @@ This system treats **trust as a primitive** rather than content. Every piece of 
 └─────────────────────────────────────┘
 ```
 
+## 🧠 Trust Algorithm: Similarity-Based Inference
+
+The platform uses a **similarity-based trust diffusion algorithm** that infers trust by finding "people like me" rather than following graph paths.
+
+### Key Properties
+
+**Non-Transitive**: A→B→C does NOT imply A→C
+- Trust is based on similarity in trust space, not graph connectivity
+- Prevents exploitation via trust chains
+
+**Sybil Resistant**: Fake users with 0.0 default trust contribute nothing
+- Unknown users default to 0.0 trust (not 0.5)
+- Fake accounts have no overlap with real users → zero similarity → zero influence
+
+**Discovers Schelling Points**: Sources trusted across different communities emerge naturally
+- Example: Reuters trusted by both progressive and conservative users
+- No centralized list of "authoritative" sources needed
+
+**Finds "People Like Me"**: Infers trust from users with similar trust patterns
+- Computes cosine similarity between trust vectors
+- Uses Gaussian kernel weighting: `similarity = exp(-distance² / σ²)`
+
+### Algorithm Overview
+
+```
+1. Explicit Trust Check
+   If user has set explicit trust for entity → return it (always wins)
+
+2. Build Trust Vectors
+   Create sparse vectors of each user's explicit trust values
+   Example: user1 = {Wikipedia: 0.9, Nature: 0.95, Reuters: 0.8}
+
+3. Find Similar Users
+   For target entity, find users who:
+   - Have set trust for the target
+   - Have ≥3 overlapping entities with querying user
+   - Compute cosine similarity on overlapping values
+
+4. Weight by Similarity
+   Apply Gaussian kernel: weight = exp(-(1 - similarity)² / σ²)
+   Default σ = 0.3 (tunable parameter)
+
+5. Compute Weighted Average
+   Trust = Σ(weight_i × trust_i) / Σ(weight_i)
+
+6. Confidence Blending
+   If total weight < threshold:
+     Blend inferred trust with entity default based on confidence
+```
+
+### Entity-Specific Default Trust
+
+Security-critical for Sybil resistance:
+
+- **Unknown users**: 0.0 (prevents fake account attacks)
+- **Official bots**: 0.5 (IMPORT_BOT_NEWS, COMPOSITION_BOT, etc.)
+- **Well-known sources**: 0.5 (REUTERS, WIKIPEDIA, NATURE, CDC, etc.)
+- **Everything else**: 0.0 (must earn trust)
+
+### Provenance Chain (Bot Vouching)
+
+Prevents fake attribution attacks:
+
+```
+effective_trust = min(trust_in_bot, trust_in_source, assertion_trust)
+```
+
+Example: Fake bot claims content is from Reuters
+- User trusts Reuters (0.9) but not fake bot (0.0 default)
+- Effective trust = min(0.9, 0.0) = 0.0
+- Content is filtered out
+
+Allows nuanced trust:
+- Trust Wikipedia as source (0.95)
+- Distrust automated extraction (0.4)
+- Effective trust = 0.4 (limited by bot trust)
+
+### Phrasing Selection (Editorial Improvements)
+
+Uses `equivalent_to` assertion relationships:
+
+1. Find all assertions marked as equivalent to original
+2. For each, check editor's trust value
+3. If editor more trusted AND high confidence → use their phrasing
+4. Allows trusted composition bots to improve clarity while preserving attribution
+
+### Tunable Parameters
+
+```typescript
+// Similarity computation
+SIMILARITY_BANDWIDTH_SIGMA = 0.3      // Gaussian kernel width
+MIN_OVERLAP_FOR_SIMILARITY = 3        // Minimum shared entities
+CONFIDENCE_THRESHOLD = 5.0            // Min weight for full confidence
+SIMILARITY_MAX_COMPARISONS = 1000     // Performance limit
+
+// Legacy (deprecated)
+DEFAULT_TRUST_VALUE = 0.5             // Use getDefaultTrust() instead
+TRUST_DAMPING_FACTOR = 0.7            // PageRank parameter (removed)
+```
+
+See [docs/TRUST_ALGORITHM.md](docs/TRUST_ALGORITHM.md) for detailed explanation and [docs/PARAMETER_TUNING.md](docs/PARAMETER_TUNING.md) for tuning guidance.
+
 ## 📁 Project Structure
 
 ```
@@ -80,14 +182,24 @@ nudge/
 └── samconfig.toml        # SAM deployment config
 ```
 
-## 🎉 What's Implemented (Phase 3 Complete)
+## 🎉 What's Implemented (Phases 1-5 Complete)
 
-### Backend Infrastructure (Phase 2)
+### Backend Infrastructure (Phases 2-5)
 - **8 Lambda Functions**: All fully implemented and tested
 - **DynamoDB Layer**: Complete CRUD operations for all tables
-- **Trust Engine**: Iterative diffusion algorithm with convergence detection
-- **Claude Integration**: Assertion extraction and article generation
-- **Backend Test Suite**: 100 tests (96 passing, 4 skipped) including 10 integration tests with real Claude API
+- **Trust Engine**: Similarity-based trust inference with provenance chain
+  - Non-transitive trust (finds "people like me", not graph paths)
+  - Sybil attack resistance (unknown users default to 0.0)
+  - Entity-specific default trust (bots, sources, users)
+  - Bot vouching for content attribution
+  - Phrasing selection for editorial improvements
+- **Claude Integration**: Assertion extraction and article generation with anti-hallucination constraints
+- **Backend Test Suite**: **135 tests passing** including:
+  - Similarity-based trust algorithm tests
+  - Provenance chain tests
+  - Composition pipeline tests
+  - Sybil resistance tests
+  - Integration tests with real Claude API
 
 ### Frontend Application (Phase 3)
 - **9 Complete Views**: Wiki, News, Chat, Profile, Trust, Groups, GroupDetail, Onboarding, Login
@@ -292,24 +404,31 @@ npm test -- --run --coverage
 
 #### Test Suite
 
-**Backend Tests (51+ tests)**
+**Backend Tests (135 tests - all passing)**
 
-*Unit Tests (45+ tests)*
-- **Trust Graph** (21 tests): Node/edge operations, complex topologies, cycles
-- **Trust Propagation** (16 tests): Diffusion algorithm, multi-hop trust, convergence
-- **Trust Engine**: Network computation, filtering, sorting by trust
+*Core Trust Algorithm Tests*
+- **Trust Graph** (19 tests): Node/edge operations, complex topologies, cycles
+- **Trust Propagation** (17 tests): Similarity-based inference, non-transitivity, Sybil resistance, Schelling points
+- **Trust Engine** (11 tests): Network computation, filtering, sorting, explanations
+- **Trust Similarity** (implicit): Cosine similarity, Gaussian kernel, trust vectors
+- **Provenance Chain** (8 tests): Bot vouching, fake attribution prevention, min trust computation
+- **Composition Pipeline** (16 tests): Phrasing selection, conflict detection, anti-hallucination validation
+
+*Utility Tests*
 - **Error Utilities** (11 tests): Custom error types, status codes, formatting
-- **Auth Utilities** (8 tests): JWT extraction, body parsing, ownership checks
-- **Response Utilities** (12 tests): API Gateway responses, CORS headers
-- **Lambda Functions**: User profile handler with mocking
+- **Auth Utilities** (7 tests): JWT extraction, body parsing, ownership checks
+- **Response Utilities** (15 tests): API Gateway responses, CORS headers
 
-*Integration Tests (6 tests using Claude API)*
+*Integration Tests (13 tests using real Claude API)*
 - ✅ **Article Decomposition**: Extract assertions from Wikipedia/news content
 - ✅ **Trust-Based Filtering**: Filter assertions by user's trust values
 - ✅ **Article Reassembly**: Generate coherent articles from trusted assertions
 - ✅ **Trust Influence**: Verify high vs low trust produces different content
 - ✅ **Chat Q&A**: Answer questions using only trusted knowledge base
 - ✅ **End-to-End Flow**: Decompose → Filter → Reassemble workflow
+- ✅ **Conflict Resolution**: Handle contradictory assertions appropriately
+- ✅ **Scale Testing**: Process 20+ assertion articles
+- ✅ **Anti-Hallucination**: Verify no facts introduced beyond assertions
 
 **Frontend Tests (27 tests)**
 
