@@ -18,13 +18,14 @@ vi.mock('../db/trust', () => ({
   getTrustValue: vi.fn(),
   getTrustValues: vi.fn(),
   storePropagatedTrust: vi.fn(),
+  getAllUsersTrust: vi.fn(),
 }));
 
 vi.mock('../db/assertions', () => ({
   queryAssertionsByType: vi.fn(),
 }));
 
-import { listUserTrust, getTrustValue, getTrustValues, storePropagatedTrust } from '../db/trust';
+import { listUserTrust, getTrustValue, getTrustValues, storePropagatedTrust, getAllUsersTrust } from '../db/trust';
 import { queryAssertionsByType } from '../db/assertions';
 
 describe('Trust Engine', () => {
@@ -40,6 +41,7 @@ describe('Trust Engine', () => {
           targetId: 'user2',
           targetType: 'user',
           trustValue: 0.8,
+          isDirectTrust: true,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
@@ -48,14 +50,15 @@ describe('Trust Engine', () => {
           targetId: 'source1',
           targetType: 'source',
           trustValue: 0.9,
+          isDirectTrust: true,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
       ];
 
-      vi.mocked(listUserTrust).mockResolvedValue({
-        trustRelationships: mockTrustRelations
-      });
+      vi.mocked(getAllUsersTrust).mockResolvedValue(
+        new Map([['user1', mockTrustRelations]])
+      );
       vi.mocked(queryAssertionsByType).mockResolvedValue({ assertions: [] });
       vi.mocked(storePropagatedTrust).mockResolvedValue(undefined);
 
@@ -63,13 +66,11 @@ describe('Trust Engine', () => {
 
       expect(result).toBeDefined();
       expect(result.size).toBeGreaterThanOrEqual(0);
-      expect(listUserTrust).toHaveBeenCalledWith('user1', 1000);
+      expect(getAllUsersTrust).toHaveBeenCalled();
     });
 
     it('should store propagated trust values', async () => {
-      vi.mocked(listUserTrust).mockResolvedValue({
-        trustRelationships: []
-      });
+      vi.mocked(getAllUsersTrust).mockResolvedValue(new Map());
       vi.mocked(queryAssertionsByType).mockResolvedValue({ assertions: [] });
       vi.mocked(storePropagatedTrust).mockResolvedValue(undefined);
 
@@ -80,10 +81,11 @@ describe('Trust Engine', () => {
   });
 
   describe('getUserTrustForAssertion', () => {
-    it('should return 0.5 default when no trust value computed', async () => {
+    it('should return 0.0 default when no trust value computed', async () => {
       vi.mocked(getTrustValue).mockResolvedValue(null);
+      vi.mocked(getAllUsersTrust).mockResolvedValue(new Map());
       const trust = await getUserTrustForAssertion('user1', 'assertion1');
-      expect(trust).toBe(0.5);
+      expect(trust).toBe(0.0);
     });
   });
 
@@ -148,14 +150,15 @@ describe('Trust Engine', () => {
       expect(filtered).toHaveLength(2);
     });
 
-    it('should use default 0.5 for missing trust values', async () => {
+    it('should use default 0.0 for missing trust values', async () => {
       const assertions = [{ assertionId: 'a1', content: 'Fact 1' }];
 
       vi.mocked(getTrustValues).mockResolvedValue(new Map());
 
+      // With default 0.0, threshold of 0.4 should filter out the assertion
       const filtered = await filterAssertionsByTrust('user1', assertions as any, 0.4);
 
-      expect(filtered).toHaveLength(1);
+      expect(filtered).toHaveLength(0);
     });
   });
 
@@ -167,20 +170,24 @@ describe('Trust Engine', () => {
         { assertionId: 'a3', content: 'Fact 3' },
       ];
 
+      vi.mocked(getTrustValues).mockResolvedValue(new Map());
+
       const sorted = await sortAssertionsByTrust('user1', assertions as any);
 
       expect(sorted).toHaveLength(3);
-      // Default trust is 0.5 for all, so order may vary
+      // Default trust is 0.0 for all, so order may vary
       expect(sorted.map((a) => a.assertionId)).toContain('a1');
       expect(sorted.map((a) => a.assertionId)).toContain('a2');
       expect(sorted.map((a) => a.assertionId)).toContain('a3');
     });
 
-    it('should handle missing trust values with default 0.5', async () => {
+    it('should handle missing trust values with default 0.0', async () => {
       const assertions = [
         { assertionId: 'a1', content: 'Fact 1' },
         { assertionId: 'a2', content: 'Fact 2' },
       ];
+
+      vi.mocked(getTrustValues).mockResolvedValue(new Map());
 
       const sorted = await sortAssertionsByTrust('user1', assertions as any);
 
@@ -198,25 +205,31 @@ describe('Trust Engine', () => {
         targetType: 'assertion',
         trustValue: 0.8,
         isDirectTrust: false,
+        propagationConfidence: 0.9,
         propagatedFrom: ['user2', 'user3'],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       } as any);
 
+      vi.mocked(getAllUsersTrust).mockResolvedValue(new Map());
+
       const explanation = await getTrustExplanation('user1', 'assertion1');
 
       expect(explanation).toBeDefined();
       expect(explanation.trustValue).toBe(0.8);
-      expect(explanation.isDirectTrust).toBe(false);
-      expect(explanation.sources).toBeDefined();
-      expect(explanation.sources.length).toBe(2);
+      expect(explanation.isExplicit).toBe(false);
+      expect(explanation.contributors).toBeDefined();
+      expect(Array.isArray(explanation.contributors)).toBe(true);
     });
 
-    it('should include trust paths in explanation', async () => {
+    it('should include contributors in explanation', async () => {
+      vi.mocked(getTrustValue).mockResolvedValue(null);
+      vi.mocked(getAllUsersTrust).mockResolvedValue(new Map());
+
       const explanation = await getTrustExplanation('user1', 'source1');
 
-      expect(explanation.sources).toBeDefined();
-      expect(Array.isArray(explanation.sources)).toBe(true);
+      expect(explanation.contributors).toBeDefined();
+      expect(Array.isArray(explanation.contributors)).toBe(true);
     });
   });
 });
