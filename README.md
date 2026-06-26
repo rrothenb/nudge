@@ -2,12 +2,12 @@
 
 > ⚠️ **This README is not currently in sync with the project's direction.**
 > It accurately documents the **code as built**, but the framing and vision below
-> predate a refinement of the project's goals. For the current intent — a
-> Wikipedia-like, fully-attributed fact layer with trust on every assertion and
-> metrics as the central deliverable — see [`DESIGN_GUIDANCE.md`](./DESIGN_GUIDANCE.md).
-> For the gap between this codebase and that direction (what needs to change, and
-> what's reusable), see [`RECONCILIATION.md`](./RECONCILIATION.md). Where this
-> README and `DESIGN_GUIDANCE.md` disagree, the guidance is authoritative.
+> predate a refinement of the project's goals. For an overview of **what Nudge is**,
+> the system it aims to be, the first demo (MVD) that tests its riskiest assumptions,
+> and the design direction, see [`DESIGN_GUIDANCE.md`](./DESIGN_GUIDANCE.md). For the
+> gap between this codebase and that direction (what needs to change, and what's
+> reusable), see [`RECONCILIATION.md`](./RECONCILIATION.md). Where this README and
+> `DESIGN_GUIDANCE.md` disagree, the guidance is authoritative.
 
 A multi-user trust-based knowledge platform that enables personalized truth through trust propagation. Users see content filtered and ranked by their personal trust network, allowing multiple incompatible worldviews to coexist without forced consensus.
 
