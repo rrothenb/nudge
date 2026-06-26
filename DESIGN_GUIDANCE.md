@@ -140,19 +140,30 @@ you might be underrating." The openness dial is the only partial remedy. So the 
 must run primarily on **downward** signal; treat upward fact-ratings as a rare bonus.
 
 ### 6.2 Calculated trust for unrated sources
-For a source the user hasn't rated, trust is estimated. The useful signal is **fact-mediated**: when
-a user reacts to an *assertion* that an unrated source also supports, that's evidence about the
-source. Given §6.1, the realistic firing is downward — knocking down a surfaced fact an unrated
-source backs is evidence to *lower* estimated trust in that source, and relates the user to others
-who rated that fact the same way.
+For a source the user hasn't rated, trust **must** be estimated — otherwise none of its facts can
+ever surface, and there is nothing cross-cutting to react to. **At cold start there are no fact-level
+signals yet**, so the only material is the user's sparse explicit *source* ratings plus the assertion
+graph. Estimate from that by:
+- **(a) per-source estimation** — compute a trust value for each unrated source; or
+- **(b) source-overlap similarity** — sources that assert the *same facts* are similar, so trust
+  flows from rated to unrated sources through shared assertions (estimable at the source level or
+  directly at the fact level); or
+- **(c) a combination** of the two.
 
-### 6.3 A note on the current code (and a caution it triggers)
-The existing engine already implements a **similarity-based diffusion** — the right *shape*. But it
-keys similarity on users' **source-trust vectors** ("find people like me"). Source-trust is the most
-tribally-sorted signal in the system, so similarity built on it clusters users by tribe and predicts
-*inward* — which would make the personalization a bubble rather than a bridge (see §8.2). The
-fact-mediated, idiosyncratic signal of §6.2 is the cross-cutting one worth weighting instead.
-Reconciling the engine with this is real code work, not a doc edit.
+Once the user starts **reacting to facts**, a second, **fact-mediated** signal refines the estimate.
+Given §6.1 its realistic firing is downward: knocking down a surfaced fact an unrated source backs is
+evidence to *lower* estimated trust in that source, and relates the user to others who rated that
+fact the same way.
+
+### 6.3 A note on the current code
+The existing engine implements a **similarity-based diffusion** — the right *shape* — but the
+similarity it computes is **user-user**, over users' source-trust vectors ("find people like me").
+Two problems: it has no **within-user** cold-start estimation (§6.2), so a single brand-new user gets
+only entity defaults with nothing surfaced from unrated sources; and the user-user form keys on the
+most tribally-sorted signal, which clusters users by tribe and predicts *inward* (see §8.2).
+Reconciling the engine — adding the within-user source-overlap estimation of §6.2, then the
+fact-mediated path, and pointing any cross-user layer at fact-level idiosyncrasy — is real code work,
+not a doc edit.
 
 ### 6.4 Article construction and the "hidden synthetic voice"
 Both Nudge and the MVD **construct readable, Wikipedia-like entries** from a user's trusted facts —
@@ -212,11 +223,14 @@ bubbles through the very gesture meant to bridge them. **Status:** an open desig
 the experiment, not a law. Instrument propagation so the metrics (§7) can show which way it's actually
 pushing, rather than assuming the sign.
 
-### 8.2 Don't key trust estimation on source-trust vectors
-Source-trust is the most tribally-sorted signal, so similarity computed over it clusters by tribe and
-predicts inward — turning the bridge into a bubble. Weight estimation toward fact-level idiosyncrasy
-(§6.2) instead. **Status:** a caution about *how* to build the estimator; the current engine does the
-thing this warns against (§6.3).
+### 8.2 Don't build *cross-user* similarity on source-trust vectors
+When estimating one user's trust from *other users* ("people like me"), don't compute that user-user
+similarity over source-trust vectors: source-trust is the most tribally-sorted signal, so it clusters
+users by tribe and predicts inward — turning the bridge into a bubble. Point any cross-user layer at
+fact-level idiosyncrasy instead. This is **distinct from** the *within-user* source-overlap estimation
+of §6.2, which is necessary for cold start and is not what this warns against. **Status:** a caution
+about the cross-user layer; the current engine is built on exactly this user-user-over-source-trust
+shape (§6.3).
 
 ### 8.3 Merit-versus-label headwind
 Will a user judge a cross-source fact on its **content**, or bounce off the **source label**? Source

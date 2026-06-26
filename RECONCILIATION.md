@@ -18,25 +18,30 @@ facts). Adversarial/Sybil hardening and multi-surface breadth are *deferrals*, n
 
 ## 🔴 Core to the thesis
 
-### R1 — Trust estimation: fact-mediated & downward, re-key the diffusion `[change code]`
-- **Guidance:** §6.2 wants calculated source-trust derived from **fact-level** signal — when a user
-  reacts to an *assertion* that an unrated source also supports — and §6.1 says that signal is
-  predominantly **downward** (users knock down surfaced facts they disbelieve; upward ratings are
-  rare because under-rated facts stay unseen). §6.3 notes the existing diffusion is the right *shape*;
-  §8.2 cautions against keying it on source-trust vectors.
-- **Repo today:** `backend/lib/trust/similarity.ts` + `propagation.ts` infer trust via cosine
-  similarity over users' **source-trust vectors** ("find people like me") — the right shape, but
-  keyed on the most tribally-sorted signal, which §8.2 warns clusters by tribe and predicts inward.
-  There is no fact-mediated path and no asymmetric handling of downward signal.
+### R1 — Trust estimation: bootstrap unrated-source trust, then refine with fact-level signal `[change code]`
+- **Guidance:** §6 — estimate a full per-user trust picture from sparse explicit trust. **At cold
+  start there are no fact-level signals**, so trust must be estimated for **unrated sources** from the
+  user's sparse explicit *source* ratings plus the assertion graph — otherwise no facts from unrated
+  sources can ever surface. Per §6.2 this is done by (a) per-source estimation, (b) **source-overlap
+  similarity** (sources that assert the same facts are similar, so trust flows between them), or
+  (c) a combination. As users later react to facts (mostly **downward**, §6.1), the fact-mediated
+  path refines the estimate. §8.2's caution is about a *different* thing — cross-user "people like me"
+  similarity — not this within-user source estimation.
+- **Repo today:** `backend/lib/trust/similarity.ts` + `propagation.ts` estimate a user's trust in a
+  target via **user-user** similarity over source-trust vectors ("find people like me"). That (i)
+  needs *other* users — a single brand-new user gets only entity defaults, with no within-user
+  bootstrap from their own ratings + the assertion graph — and (ii) is exactly the cross-user shape
+  §8.2 cautions about. There is no source-overlap estimation and no fact-mediated path.
 - **Concrete change:**
-  - **Keep the diffusion structure; change what it keys on.** Re-key estimation toward fact-level
-    idiosyncrasy and the fact-mediated path, not raw source-trust similarity.
-  - Add the fact-mediated inference: a user's reaction to an *assertion* adjusts calculated trust of
-    unrated sources that support/contradict it. Build it **downward-first** (knocking down a surfaced
-    fact lowers calculated trust in sources backing it, and relates the user to others who rated it
-    the same way). Treat upward ratings as the rare bonus case.
-  - Stop describing "Finds 'People Like Me'" as the headline feature (README, docs) — per §8.2 that
-    is the failure mode, not the goal.
+  - Add **within-user cold-start estimation** of unrated-source trust from the user's explicit source
+    ratings + the assertion graph (source-overlap similarity and/or per-source estimation), so a new
+    single user still gets cross-source facts surfaced. This is the essential, logically-first piece.
+  - Add the **fact-mediated refinement** for once fact-level reactions accrue — **downward-first**
+    (knocking down a surfaced fact lowers calculated trust in sources backing it, and relates the
+    user to others who rated it the same way); treat upward ratings as the rare bonus case.
+  - Treat **user-user CF over source-trust vectors** as a *later* personalization layer governed by
+    the §8.2 caution (point it at fact-level idiosyncrasy, not source-trust vectors) — not the
+    cold-start mechanism, and not the headline. Retire "Finds 'People Like Me'" as the framing.
 
 ### R2 — Propagation direction must be instrumented, not assumed `[change code]` `[build new]`
 - **Guidance:** §8.1 — the *direction* a fact-level action propagates is an **open design variable
