@@ -7,12 +7,15 @@ the *existing repo* against that guidance and says what actually needs to change
 **Framing (read this first):** the guidance is a **refinement, not a restart.** Most of the built
 backend (assertion store, import pipeline, article construction/generation, onboarding, trust
 plumbing) is reusable — including the article-construction pipeline, which the guidance elevates to
-MVD-core (§6.4). The real work concentrates in three places: the **trust estimation mechanism**, a
+MVD-core (§6.5). The real work concentrates in three places: the **trust estimation mechanism**, a
 **metrics layer that doesn't exist yet**, and a few **product surfaces** (openness dial, multi-source
-facts). Adversarial/Sybil hardening and multi-surface breadth are *deferrals*, not corrections.
+facts, user fact contribution). Adversarial/Sybil hardening and multi-surface breadth are *deferrals*,
+not corrections.
 
 **Legend — severity:** 🔴 core to the thesis · 🟠 needed for the MVD · 🟡 docs/scope cleanup.
 **Status tags:** `[change code]` · `[build new]` · `[defer]` · `[docs only]`.
+**Note:** R-numbers are stable identifiers, not an ordering — R12/R13 were added later and sit in
+their severity sections, not at the end.
 
 ---
 
@@ -62,9 +65,36 @@ facts). Adversarial/Sybil hardening and multi-surface breadth are *deferrals*, n
 - **Concrete change:** build it — affect capture, proxy capture, the divergence dashboard. This is
   the most under-built, highest-priority piece per §7.
 
+### R12 — Pricing user-authored assertions `[build new]`
+- **Guidance:** §6.3 — a peer-authored claim must be given an estimated trust value for every *other*
+  user. Its author has no corpus and often no ratings, so §6.2's source-overlap machinery has little
+  to work with. Three paths: (a) corroboration overlap through the *fact*, (b) accrued trust in the
+  author once they have a history (downward-first, plausibly topic-scoped), (c) user-user similarity
+  over source-trust vectors — which is §8.2's suspect shape, and the only one that covers the case
+  that matters (novel claim, new contributor).
+- **Repo today:** the *storage* exists — `shared/types/assertion.ts` has `sourceType: "user"` and
+  `authorUserId`, and `backend/functions/assertion-crud` accepts a POST. Nothing **prices** these:
+  the trust engine treats sources as the trust-bearing entity and has no author-as-entity estimation,
+  no corroboration-overlap path, and no per-assertion record of *which* path produced a value.
+- **Concrete change:** implement (a) and (b); implement (c) deliberately weak and **logged**. Record
+  on every peer-authored assertion which path priced it, so R3's dashboard can compare bridging vs.
+  bubbling by path. Per §6.3 and §8.2 this is an instrumented design variable — do not hard-code a
+  belief about which path is right.
+
 ---
 
 ## 🟠 Needed for the MVD
+
+### R13 — Fact-contribution surface `[change code]` `[build new]`
+- **Guidance:** §5 — users add facts to the seeded topic; the MVD tests the *experience* of
+  contributing, not just the estimation problem behind it. Topic creation stays cut (R7).
+- **Repo today:** backend create path exists (see R12); no frontend affordance — `frontend/src/lib/
+  components` has trust/content/groups but no compose surface. Contribution is also not distinguished
+  in the UI from ingested facts.
+- **Concrete change:** add the compose UI, attribute the assertion to its author, and show authorship
+  in the hover/attribution treatment R4 builds. Decide and document what a contributor sees about
+  their fact's reach (this is itself a §7 proxy and a §8.4 risk — showing "your fact reached N people"
+  could turn contribution into a broadcast game).
 
 ### R4 — Multi-source assertions + de-sourcing `[change code]`
 - **Guidance:** §1 — a fact typically carries **multiple** sources; hovering reveals them; cross-
@@ -118,13 +148,22 @@ facts). Adversarial/Sybil hardening and multi-surface breadth are *deferrals*, n
 - Heavy investment in Sybil resistance, trust laundering, provenance/bot-vouching, 0.0-default-for-
   unknown (README, `IMPLEMENTATION_SUMMARY.md`). Not wrong — just not the MVD threat model (small,
   non-adversarial user set). Note as deferred; don't let it drive design now, don't delete it.
+- **Amended by R13:** fact contribution creates the abuse surface this work was aimed at, so the
+  deferral now rests on an **explicit assumption about the user set** (§5) rather than on there being
+  nothing to attack. Still deferred — but state the assumption where the deferral is recorded, and
+  keep the existing hardening code rather than deleting it, since it is the thing that gets turned on
+  if the assumption stops holding.
 
 ---
 
 ## Suggested sequencing
 
 1. **Docs cleanup (cheap, reversible):** R8, R9, R10, R11 — make the repo *say* the right thing.
-2. **MVD surfaces:** R4 (multi-source model), R5 (dial), R6 (onboarding check), R7 (topic lockdown).
+2. **MVD surfaces:** R4 (multi-source model), R5 (dial), R6 (onboarding check), R7 (topic lockdown),
+   R13 (contribution UI). R4 before R13 — the attribution treatment R4 builds is where authorship
+   gets displayed.
 3. **The thesis core:** R1 (re-keyed, downward-first estimation), R2 (instrument propagation
-   direction), R3 (metrics layer). Do these together — R1/R2 produce the signals R3 must display,
-   and none of the three is meaningful without the others.
+   direction), R12 (pricing peer-authored assertions), R3 (metrics layer). Do these together — R1,
+   R2 and R12 produce the signals R3 must display, and none of them is meaningful without the others.
+   R12 depends on R1: it reuses the source-overlap machinery for its corroboration path and the
+   author-as-entity path is the fact-mediated refinement keyed on a person.

@@ -13,7 +13,7 @@ this document is authoritative.
 
 > Conventions: **"Nudge"** refers to the eventual system. **"the MVD"** (minimum viable demo) refers
 > to the first build, which tests the core bet. Most of the backend is shared between them; the MVD
-> is limited mainly in its UI and in which contribution features it exposes.
+> is limited mainly in its UI and in topic scope, not in core machinery.
 
 ---
 
@@ -88,7 +88,8 @@ The full vision, for context:
 
 - **Many topics**, each a single shared page. Users **contribute by adding facts** to an existing
   topic — Wikipedia's "edit to add, don't fork" — so the community converges on one shared substrate
-  per topic rather than splitting into competing articles.
+  per topic rather than splitting into competing articles. (The MVD tests this loop too, on one
+  topic — see §5.)
 - **Trust over sources, facts, people, organizations, and groups**, estimated per user from sparse
   input (§6).
 - **Generated, readable, Wikipedia-like prose** per user, constructed from their trusted fact set.
@@ -108,17 +109,30 @@ whether opening up actually reduces polarization.
 - Ingestion of attributed facts for one (or a few) **seeded** topics, sources spanning the spectrum.
 - The trust-estimation model (§6) and per-user trust filtering.
 - **Construction of Wikipedia-like entries** from the facts that clear a user's trust threshold,
-  including the hidden synthetic voice (§6.4).
+  including the hidden synthetic voice (§6.5).
+- **User-authored assertions** — any user can add a fact to the seeded topic, and the system
+  estimates, for every *other* user, how likely they are to trust it (§6.3). Both halves are in
+  scope: the **experience** of contributing, and the **estimation problem** a peer-authored claim
+  creates.
 - The openness dial with gentle encouragement.
 - **The metrics layer (§7)** — the actual deliverable.
 
-**The MVD limits (mostly UI / contribution scope, not core machinery):**
-- **No user-created topics** — purely a UI/scope cut; the backend stays topic-general.
-- **Users do not add facts** — they only express trust (rate sources at onboarding; reject surfaced
-  facts they disbelieve). Fact contribution is an eventual-Nudge feature.
-- Trust targets may be narrower at first (sources and facts) than the eventual people/orgs/groups.
+**The MVD limits (mostly UI / topic scope, not core machinery):**
+- **No user-created topics** — purely a UI/scope cut; the backend stays topic-general. Users add
+  *facts* to the seeded topic; they don't open new ones.
+- Trust targets are **sources, facts, and users-as-authors**; organizations and groups are deferred.
+  (User-authored assertions force people into the MVD's trust targets — see §6.3.)
 - Small user set; no distribution work; adversarial/Sybil hardening deferred (not the early threat
-  model).
+  model). Note that fact contribution is the obvious abuse vector, so this deferral is now an
+  **explicit assumption about the user set** — a small, known, non-adversarial group — rather than
+  the absence of an attack surface.
+
+**Why fact contribution is in scope.** It was previously cut as an eventual-Nudge feature. It comes
+back because it is not a UI nicety: it is the one place where the people being measured *write* the
+substrate, and it creates an estimation problem the ingestion-only design never poses (§6.3). It is
+also the sharpest available test of §2's trusted-messenger claim — a peer is a very different
+messenger from a publication, and the MVD can measure whether a cross-cutting fact lands better or
+worse coming from one (§7.1).
 
 ---
 
@@ -155,7 +169,42 @@ Given §6.1 its realistic firing is downward: knocking down a surfaced fact an u
 evidence to *lower* estimated trust in that source, and relates the user to others who rated that
 fact the same way.
 
-### 6.3 A note on the current code
+### 6.3 Trust in user-authored assertions
+Any user can add a fact, so the system must estimate — for every *other* user — how likely they are
+to trust a claim written by a peer. This is **not** the §6.2 problem with a different label. An
+ingested source arrives with a **corpus**: it has asserted many things, it overlaps with other
+sources, and the user may have rated it directly at onboarding. A user-authored assertion arrives
+from a person who may have written **exactly one thing** and whom **nobody has rated**. The entity is
+not merely unrated, it is *new* — so source-overlap similarity has almost nothing to chew on.
+
+The signals actually available, in descending order of how well-behaved they are:
+- **(a) Corroboration overlap.** If the claim restates or corroborates something ingested sources
+  already assert, it inherits estimated trust through the *fact*, via the same §6.2(b) machinery —
+  the assertion, not the author, is the bridge. This is the clean case, and it works precisely when
+  the claim is **not novel**.
+- **(b) Accrued trust in the author.** Once a user has authored several assertions and others have
+  reacted, the author becomes a trust target like any source — downward-first per §6.1. This is the
+  fact-mediated path keyed on a *person*. It cannot price anyone's **first** assertion, and trust in
+  an author is plausibly **topic- or claim-scoped** rather than global.
+- **(c) The author's own source ratings.** The tempting bootstrap: *this author trusts the sources
+  you trust, so you'd probably trust them.* Note what this is — **user-user similarity computed over
+  source-trust vectors**, exactly the shape §8.2 cautions against. So the most readily available
+  cold-start signal for peer-authored facts is the one most likely to sort users by tribe and route
+  peer claims *inward*.
+
+That collision is the interesting part and should not be resolved by fiat. (a) and (b) are safe but
+cover the least interesting cases — the unoriginal claim and the established author. (c) covers the
+case we actually care about (a novel claim from a new contributor) and is the one under suspicion.
+**Treat this as an instrumented design variable, like §8.1:** implement it, log which path priced
+each peer-authored assertion, and let §7's metrics show whether peer contribution bridges or
+bubbles. A defensible default is to lean on (a)/(b) where they have signal and let (c) act only
+weakly and visibly — but that is a starting position to measure, not a finding.
+
+Two consequences worth naming: a peer-authored fact **cannot be de-sourced** by spectrum coverage
+(§8.3) until other sources corroborate it, so it arrives with its label maximally attached; and this
+is the first point where the shared substrate of §6.6 is written by the users being measured.
+
+### 6.4 A note on the current code
 The existing engine implements a **similarity-based diffusion** — the right *shape* — but the
 similarity it computes is **user-user**, over users' source-trust vectors ("find people like me").
 Two problems: it has no **within-user** cold-start estimation (§6.2), so a single brand-new user gets
@@ -163,9 +212,11 @@ only entity defaults with nothing surfaced from unrated sources; and the user-us
 most tribally-sorted signal, which clusters users by tribe and predicts *inward* (see §8.2).
 Reconciling the engine — adding the within-user source-overlap estimation of §6.2, then the
 fact-mediated path, and pointing any cross-user layer at fact-level idiosyncrasy — is real code work,
-not a doc edit.
+not a doc edit. Separately, the data model already carries user-authored assertions (assertions have
+a source type and an author field, and there is a create endpoint), but nothing **prices** them:
+§6.3's estimation problem is unimplemented, and there is no contribution UI.
 
-### 6.4 Article construction and the "hidden synthetic voice"
+### 6.5 Article construction and the "hidden synthetic voice"
 Both Nudge and the MVD **construct readable, Wikipedia-like entries** from a user's trusted facts —
 this is generated prose, not a raw fact list. Generated prose unavoidably has a **voice**: ordering,
 emphasis, phrasing, what-leads-to-what are rhetorical choices even when no human made them, and a
@@ -175,10 +226,11 @@ voiceless appearance even though a voice is present. This is a deliberate, eyes-
 (see §8): a neutral-looking text can steer without the reader noticing, and two users get different
 fluent, authoritative entries on "the same" topic.
 
-### 6.5 Shared substrate, personalized view
+### 6.6 Shared substrate, personalized view
 There is **one shared topic and one shared fact database** — users cannot fork a topic into competing
-articles. But each user's **rendered entry differs**: different facts clear different thresholds, in
-different order. So "shared" describes the substrate and the topic's identity, **not** the experience.
+articles; they add facts to the one that exists (§6.3). But each user's **rendered entry differs**:
+different facts clear different thresholds, in different order. So "shared" describes the substrate
+and the topic's identity, **not** the experience.
 This is deliberate, and it is itself a risk: Wikipedia's trust comes partly from everyone seeing the
 *same* words, and personalizing the view gives that up. Worth watching in the metrics.
 
@@ -192,7 +244,10 @@ polarization machine that produces identical-looking activity.
 
 ### 7.1 Separate ground truth from activity proxies
 - **Proxies (cheap, and dangerous):** engagement, dial movement, cross-source facts surfaced, trust
-  edges created. **All can rise while the real target stays flat or reverses.**
+  edges created, **facts contributed and how far they travel** (how many other users a peer-authored
+  assertion clears the threshold for, and which §6.3 path priced it). **All can rise while the real
+  target stays flat or reverses** — a contribution surface is especially good at manufacturing
+  healthy-looking activity.
 - **Ground truth:** out-group affect, measured periodically (a feeling-thermometer delta is the
   standard instrument). This catches a system hardening people while its proxies look healthy.
 
@@ -230,7 +285,10 @@ users by tribe and predicts inward — turning the bridge into a bubble. Point a
 fact-level idiosyncrasy instead. This is **distinct from** the *within-user* source-overlap estimation
 of §6.2, which is necessary for cold start and is not what this warns against. **Status:** a caution
 about the cross-user layer; the current engine is built on exactly this user-user-over-source-trust
-shape (§6.3).
+shape (§6.4). Adding user-authored assertions makes this caution **load-bearing rather than
+theoretical** — per §6.3(c), user-user similarity is the most available way to price a novel claim
+from a new contributor, so the MVD will be leaning on the suspect mechanism at exactly the moment it
+matters. Instrument it accordingly.
 
 ### 8.3 Merit-versus-label headwind
 Will a user judge a cross-source fact on its **content**, or bounce off the **source label**? Source
@@ -239,7 +297,17 @@ framing, and multi-source de-sourcing (a fact reported across the spectrum arriv
 de-sourced) exist to buy a few degrees of merit-judgment against that gravity. **Status:** a
 measurable headwind, not a blocker.
 
-### 8.4 Instrument effect
+### 8.4 The peer as messenger
+A user-authored fact changes *who is speaking*. §2's trusted-messenger effect could cut either way: a
+peer the reader already trusts may be the strongest possible carrier for a cross-cutting fact —
+closer to the "unlikely validator" than any publication — or a stranger with no institutional weight
+may be the weakest, judged on tribal cues alone since the claim arrives un-de-sourced (§6.3, §8.3).
+There is a worse mode too: peer contribution can become **a channel for addressing the out-group
+directly**, which is the force-feeding dynamic §2 says backfires, re-created inside the app by users
+rather than by a bot. **Status:** newly in scope with fact contribution (§5), genuinely two-sided,
+and measurable — compare how cross-cutting peer-authored facts perform against ingested ones.
+
+### 8.5 Instrument effect
 Making latent trust **explicit** might harden some currently-moderate users — turning soft priors
 into stated positions the system then optimizes around. This is the failure mode that would make a
 shipped product worse than nothing, and it shows up as warmth dropping while engagement and dial-use
