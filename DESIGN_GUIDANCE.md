@@ -108,8 +108,10 @@ whether opening up actually reduces polarization.
 **The MVD includes (the hard parts):**
 - Ingestion of attributed facts for one (or a few) **seeded** topics, sources spanning the spectrum.
 - The trust-estimation model (§6) and per-user trust filtering.
-- **Construction of Wikipedia-like entries** from the facts that clear a user's trust threshold,
-  including the hidden synthetic voice (§6.5).
+- **Construction of Wikipedia-like entries** from the facts that clear a user's trust threshold
+  (§6.5), via **two composers — conservative and fluent — selected by declared stance and
+  instrumented** (§6.5.1). Two is the minimum that buys a control condition for measuring the voice;
+  it is not a UI flourish.
 - **User-authored assertions** — any user can add a fact to the seeded topic, and the system
   estimates, for every *other* user, how likely they are to trust it (§6.3). Both halves are in
   scope: the **experience** of contributing, and the **estimation problem** a peer-authored claim
@@ -120,8 +122,9 @@ whether opening up actually reduces polarization.
 **The MVD limits (mostly UI / topic scope, not core machinery):**
 - **No user-created topics** — purely a UI/scope cut; the backend stays topic-general. Users add
   *facts* to the seeded topic; they don't open new ones.
-- Trust targets are **sources, facts, and users-as-authors**; organizations and groups are deferred.
-  (User-authored assertions force people into the MVD's trust targets — see §6.3.)
+- Trust targets are **sources, facts, users-as-authors, and composers**; organizations and groups are
+  deferred. (User-authored assertions force people into the MVD's trust targets — see §6.3; composers
+  are rated directly and need no estimation — see §6.5.1.)
 - Small user set; no distribution work; adversarial/Sybil hardening deferred (not the early threat
   model). Note that fact contribution is the obvious abuse vector, so this deferral is now an
   **explicit assumption about the user set** — a small, known, non-adversarial group — rather than
@@ -216,23 +219,97 @@ not a doc edit. Separately, the data model already carries user-authored asserti
 a source type and an author field, and there is a create endpoint), but nothing **prices** them:
 §6.3's estimation problem is unimplemented, and there is no contribution UI.
 
-### 6.5 Article construction and the "hidden synthetic voice"
+### 6.5 Article construction and the synthetic voice
 Both Nudge and the MVD **construct readable, Wikipedia-like entries** from a user's trusted facts —
-this is generated prose, not a raw fact list. Generated prose unavoidably has a **voice**: ordering,
-emphasis, phrasing, what-leads-to-what are rhetorical choices even when no human made them, and a
-readability layer tunes them. *"Hidden by intent"* means Nudge presents these entries in a plain,
-encyclopedic style that **does not foreground that the text is synthesized** — it wears Wikipedia's
-voiceless appearance even though a voice is present. This is a deliberate, eyes-open choice. Its risk
-(see §8): a neutral-looking text can steer without the reader noticing, and two users get different
-fluent, authoritative entries on "the same" topic.
+generated prose, not a raw fact list. Generated prose unavoidably has a **voice**, and it is worth
+being precise about where that voice lives, because the obvious guardrail misses it.
+
+An assertion set has no inherent article-shape: it is an unordered collection of propositions, while
+prose is linear, sectioned and proportioned. So the composer must choose an order, a sectioning, and
+how many words each fact gets — all of which carry salience and framing that no assertion contains.
+The sharpest case is the **connective tissue**. Assertions are discrete propositions; prose joins them
+with *but, however, because, although, despite*. Those words **assert relationships**: "A. However, B"
+claims a tension, "A because B" claims causation, "Although A, B" demotes A to a concession. None of
+that was in A or in B. The composer manufactured it.
+
+**This is a hole in Nudge's central guarantee.** Every *assertion* is attributed and trust-weighted,
+and the reader sees only what clears their threshold — but the reader consumes **prose**, and the
+relational claims the prose adds are **unattributed and never trust-filtered**. They ride through the
+trust machinery invisibly, because that machinery operates on the assertion layer and the voice lives
+one layer above it.
+
+Note that the usual constraint does not fix this. Instructing a generator to "arrange, transition and
+structure, but add no new factual content" is a **hallucination guard**: it stops invented numbers and
+names. It draws the line at *facts* and treats arrangement as neutral residue — but arrangement and
+transition are precisely the operations that carry voice. The constraint does not merely fail to
+prevent the problem; it explicitly licenses it. "Maintain a neutral tone" is an instruction, not a
+mechanism.
+
+### 6.5.1 Composers as trust targets (replaces "hidden by intent")
+An earlier version of this document called the voice *"hidden by intent"* — presented in a plain
+encyclopedic style that does not foreground that the text is synthesized. **That position is
+withdrawn.** In its place: the composer is a **named entity the user can trust or distrust**, like a
+source or an author.
+
+This is a natural extension rather than a bolt-on — Nudge already treats trust as fine-grained,
+per-user and attached to entities, so a composer is one more entity. It closes the gap above by
+**attributing the voice**: the relational claims still exist, but they are now ascribed to a rateable
+agent instead of arriving anonymously inside apparently sourceless prose. And because there will be
+only a handful of composers, trust in them is **directly rated, never estimated** — this trust target
+does not touch the §6.2/§6.3 estimator at all.
+
+**What composers differ on** is roughly *conservatism about unstated relations*:
+- **connective discipline** — parataxis ("A. B.", no claimed relation) vs. fluent narrative;
+- **ordering policy** — chronological vs. salience-ranked;
+- **proportion** — equal words per assertion vs. trust-weighted length;
+- **conflict handling** — foreground disagreement vs. smooth it.
+
+The axis has a well-defined floor: a maximally conservative composer is nearly the raw fact list. So
+the spectrum runs from **list to essay**, which is legible enough to present to a user honestly.
+
+**The strongest argument for building this is measurement, not user empowerment.** Multiple composers
+over the *same* assertion set give a **control condition**. With one voice, "does the synthetic voice
+steer the reader?" has no counterfactual and cannot be answered. With two, facts are held constant,
+framing varies, and §7's thermometer becomes the outcome variable. That turns §6.5's risk from an
+unmeasurable anxiety into an experiment.
+
+### 6.5.2 How users choose a composer — and the trap
+The tempting discovery mechanism is the familiar **two-versions-pick-one** comparison. **Do not adopt
+it naively.** That pattern is a preference collector: it optimizes for what *satisfies*. Asked "which
+do you prefer?" about a contested topic, users will reliably pick the composer that frames things the
+way they already think — and the system then has explicit permission to keep doing it. That is §8.5's
+instrument effect with an engine bolted on, built inside the one system whose purpose is to counteract
+preference-driven sorting.
+
+Trust-decomposition does **not** require preference-based discovery. Safer options, roughly in order:
+- offer a **declared stance** ("stay close to the facts" / "give me readable prose") — stated
+  preference rather than revealed preference over samples;
+- default everyone to the conservative composer and make fluency **opt-in**;
+- if running a side-by-side at all, run it on a **neutral topic**, where tribal flattery has nothing
+  to grab.
+
+If a preference comparison is used, **instrument it as a §7 measure**: whether preference for fluent
+framing predicts polarization is itself a finding.
+
+**Two practical constraints.** Generating two versions doubles the most expensive per-user operation
+and fights §9's "regenerate on change, not on view," so any side-by-side must be occasional, not
+standing. And the trust-the-components idea generalizes past composition — the **extractor** is
+arguably more consequential, since it decides what counts as a fact at all — but §9 deliberately keeps
+extraction **shared** across users, so a per-user-trusted extractor would invert the cost model.
+Composition is already per-user, which is exactly why it is the affordable place to start.
 
 ### 6.6 Shared substrate, personalized view
 There is **one shared topic and one shared fact database** — users cannot fork a topic into competing
 articles; they add facts to the one that exists (§6.3). But each user's **rendered entry differs**:
-different facts clear different thresholds, in different order. So "shared" describes the substrate
-and the topic's identity, **not** the experience.
+different facts clear different thresholds, in different order — and per §6.5 the **relational claims
+differ too**, since connectives are composed against whatever facts surround them, so the same shared
+fact can arrive framed differently for two users. So "shared" describes the substrate and the topic's
+identity, **not** the experience.
+
 This is deliberate, and it is itself a risk: Wikipedia's trust comes partly from everyone seeing the
-*same* words, and personalizing the view gives that up. Worth watching in the metrics.
+*same* words, and personalizing the view gives that up. Note that Wikipedia's own answer is
+unavailable here — NPOV works because it is **social**, humans arguing to consensus over one shared
+text, and Nudge has no single text to argue about. Worth watching in the metrics.
 
 ---
 
@@ -245,9 +322,10 @@ polarization machine that produces identical-looking activity.
 ### 7.1 Separate ground truth from activity proxies
 - **Proxies (cheap, and dangerous):** engagement, dial movement, cross-source facts surfaced, trust
   edges created, **facts contributed and how far they travel** (how many other users a peer-authored
-  assertion clears the threshold for, and which §6.3 path priced it). **All can rise while the real
-  target stays flat or reverses** — a contribution surface is especially good at manufacturing
-  healthy-looking activity.
+  assertion clears the threshold for, and which §6.3 path priced it), **composer choice and any
+  side-by-side preference** (§6.5.2 — treat this as a measure, never only as a setting). **All can
+  rise while the real target stays flat or reverses** — a contribution surface is especially good at
+  manufacturing healthy-looking activity.
 - **Ground truth:** out-group affect, measured periodically (a feeling-thermometer delta is the
   standard instrument). This catches a system hardening people while its proxies look healthy.
 
@@ -311,8 +389,10 @@ and measurable — compare how cross-cutting peer-authored facts perform against
 Making latent trust **explicit** might harden some currently-moderate users — turning soft priors
 into stated positions the system then optimizes around. This is the failure mode that would make a
 shipped product worse than nothing, and it shows up as warmth dropping while engagement and dial-use
-climb. **Status:** precisely what the §7 metrics must detect. Watching for it is *why* the project is
-metrics-first — not an argument against trying.
+climb. A **two-versions-pick-one composer chooser** (§6.5.2) is the most direct way to build this
+failure mode on purpose, since it optimizes explicitly for what satisfies the reader. **Status:**
+precisely what the §7 metrics must detect. Watching for it is *why* the project is metrics-first —
+not an argument against trying.
 
 ---
 
@@ -332,6 +412,12 @@ The single-topic-ish constraint splits costs in two:
 **Levers, in rough order of impact:**
 1. **Model routing** — cheapest model that clears the bar. Haiku-class for extraction/chat/
    classification; reserve Sonnet for reading-quality prose; Opus essentially never. Biggest lever.
+   **Caution — this lever is coupled to §6.5:** nobody specifies the composer's ordering and
+   connective habits; they are inherited from the model's training distribution. So swapping the
+   composition model to save money **silently changes the editorial voice of every article**, and
+   invalidates comparisons across the change. Pin the composition model, version it, and treat a
+   change to it as an experimental event the §7 metrics must be able to see. Route aggressively on
+   the mechanical layers instead.
 2. **Open-source LLMs for the mechanical layers** — extraction, embeddings (never pay a frontier
    model for embeddings), dedup/matching, classification, via a pay-per-token provider. At
    single-topic volume the immediate dollar win is small; the real value is vendor independence and

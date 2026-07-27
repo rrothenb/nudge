@@ -14,7 +14,7 @@ not corrections.
 
 **Legend — severity:** 🔴 core to the thesis · 🟠 needed for the MVD · 🟡 docs/scope cleanup.
 **Status tags:** `[change code]` · `[build new]` · `[defer]` · `[docs only]`.
-**Note:** R-numbers are stable identifiers, not an ordering — R12/R13 were added later and sit in
+**Note:** R-numbers are stable identifiers, not an ordering — R12/R13/R14 were added later and sit in
 their severity sections, not at the end.
 
 ---
@@ -126,6 +126,25 @@ their severity sections, not at the end.
 - **Concrete change:** remove/hide topic-creation UI; seed one (or a few) topics. Do **not** rip out
   topic-general backend support — it's needed and reused.
 
+### R14 — Composers as trust targets `[change code]` `[build new]`
+- **Guidance:** §6.5 / §6.5.1 — the composer's ordering, proportion and especially its **connectives**
+  manufacture relational claims that no assertion contains and that the trust machinery never filters.
+  "Hidden by intent" is withdrawn: composers become **named, directly-rated entities**, with at least
+  two on the list↔essay axis so the voice has a **control condition** (§6.5.1). Selection by declared
+  stance, not by two-versions-pick-one (§6.5.2).
+- **Repo today:** one composer, hard-coded. `backend/lib/llm/prompts.ts:57` (`GENERATION_SYSTEM_PROMPT`)
+  is a single fixed voice; `:65` and `:77` constrain it to "arrange, transition, structure — NO new
+  factual content," which is a **hallucination guard that explicitly licenses the voice operations**
+  §6.5 is worried about. `:71` ("prioritize high-trust assertions in the main narrative", low-trust
+  gets "brief mention for balance") is an editorial stance baked into a prompt string. No composer
+  entity, no rating, no record of which composer produced an article.
+- **Concrete change:** parameterise the composer — at minimum a **conservative** variant (parataxis,
+  chronological, equal proportion, conflicts foregrounded) and the existing **fluent** one; make it a
+  rateable entity; **stamp every generated article with the composer and model version** so R3 can
+  segment outcomes by voice. Do *not* build the preference-comparison chooser (§6.5.2, §8.5).
+- **Cross-cutting:** §9's model-routing lever is now coupled to this — pin and version the composition
+  model, since swapping it silently changes the voice and invalidates comparisons across the change.
+
 ---
 
 ## 🟡 Docs / scope cleanup
@@ -160,8 +179,9 @@ their severity sections, not at the end.
 
 1. **Docs cleanup (cheap, reversible):** R8, R9, R10, R11 — make the repo *say* the right thing.
 2. **MVD surfaces:** R4 (multi-source model), R5 (dial), R6 (onboarding check), R7 (topic lockdown),
-   R13 (contribution UI). R4 before R13 — the attribution treatment R4 builds is where authorship
-   gets displayed.
+   R13 (contribution UI), R14 (composers). R4 before R13 — the attribution treatment R4 builds is
+   where authorship gets displayed. R14's *stamping* half (record composer + model version on every
+   article) should land early and cheaply, before much prose exists to be uncomparable.
 3. **The thesis core:** R1 (re-keyed, downward-first estimation), R2 (instrument propagation
    direction), R12 (pricing peer-authored assertions), R3 (metrics layer). Do these together — R1,
    R2 and R12 produce the signals R3 must display, and none of them is meaningful without the others.
